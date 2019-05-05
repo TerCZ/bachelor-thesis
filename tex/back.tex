@@ -4,13 +4,53 @@
 
 \section{传统索引结构}
 
-\subsection{B树与其变种}
+\subsection{B树及其变种}
 
-\subsection{字典树与其变种}
+B树及其变种索引结构是最常被使用的索引结构之一\cite{graefe2001b}。
 
-\subsection{哈希表与其变种}
+% 在计算机科学中，B树（英语：B-tree）是一种自平衡的树，能够保持数据有序。
+% 这种数据结构能够让查找数据、顺序访问、插入数据及删除的动作，都在对数时间内完成。
+% B树，概括来说是一个一般化的二叉查找树（binary search tree）一个节点可以拥有最少2个子节点。
+% 与自平衡二叉查找树不同，B树适用于读写相对大的数据块的存储系统，例如磁盘。
+% B树减少定位记录时所经历的中间过程，从而加快存取速度。
+% B树这种数据结构可以用来描述外部存储。
+% 这种数据结构常被应用在数据库和文件系统的实现上。
+
+Fractal tree and B$\epsilon$-tree
+
+Masstree
+
+A-tree
+
+Wormhole
+
+% uses a fraction of node storage to serve as an
+% update buffer \cite{esmet2012tokufs, bender2015and}.
+% The updates will be flush to children's buffer when current node's buffer is full and applied until they
+% reach the leaf.
+% This optimization aims to avoid frequent small writes to disk.
+
+% However, propagating updates also introduce write amplification problem.
+% \masst \cite{mao2012cache} partitions key into 8-byte segments and index them with a trie structure.
+% Within each trie node, a concurrent \bt is used to index the segments.
+% Similar to \sys, \masst uses optimistic concurrency control to ensure read/write atomicity and uses
+% fine-grained locks to protect nodes during split and merge.
+
+\subsection{字典树及其变种}
+
+Hot
+
+SuRF
+
+\subsection{哈希表及其变种}
+
+Cuckoo Hash
+
+Level Hash
 
 \subsection{布隆过滤器}
+
+Bloom filter
 
 \section{机器学习}
 
