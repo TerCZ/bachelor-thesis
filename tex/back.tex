@@ -7,6 +7,15 @@
 \subsection{B树及其变种}
 
 B树及其变种索引结构是最常被使用的索引结构之一\cite{graefe2001b}。
+B树是一种平衡的固定扇出（fanout）的树状结构，对于指定扇出值$B$，
+B树保证除了根节点（root node）外所有节点包含的数据量大于$B/2$并小于$B$，
+从而保证B树的树高$H=O(log_B(n))$，其中$n$为数据量大小。
+平衡二分搜索树（balanced binary search tree）可以看作是一种扇出值为$2$的B树特例。
+为保证节点数据量要求，当某节点数据量大于$B$时，该节点将会分裂为两个，
+当某节点数据小于$B/2$时，该节点将与邻居节点进行合并。
+B树树高为$O(log_B(n))$的特性使其插入（insert）、删除（delete）、
+修改（update）与查找（lookup）均能在对数时间内完成，在大数据量下具有良好的性能表现。
+B树及其变种索引结构因此被广泛地使用在数据库、文件系统与操作系统中。
 
 % 在计算机科学中，B树（英语：B-tree）是一种自平衡的树，能够保持数据有序。
 % 这种数据结构能够让查找数据、顺序访问、插入数据及删除的动作，都在对数时间内完成。
@@ -16,50 +25,174 @@ B树及其变种索引结构是最常被使用的索引结构之一\cite{graefe2
 % B树这种数据结构可以用来描述外部存储。
 % 这种数据结构常被应用在数据库和文件系统的实现上。
 
-Fractal tree and B$\epsilon$-tree
+分形树[]（Fractal Tree）和B$\epsilon$树[]（B$\epsilon$-tree）是B树的一种变种，它们与B树类似，
+将数据排序并通过固定大小的节点进行索引，从而提供对数时间的性能。然而它们每一个节点包含一个缓存（buffer），
+允许将插入、删除等修改操作临时保存在中间节点。
+通过使用缓存，这些修改只会在积累了一定数量后，才会被写入下一级节点，从而避免了B树在索引磁盘数据时，
+任何大小的写操作都会导致一次费时的磁盘读写操作。
+分形树被使用在商业数据库TokuDB[]中，同时也在一些文件系统学术原型中[]被使用。
 
-Masstree
-
-A-tree
-
-Wormhole
+% In computer science, a fractal tree index is a tree data structure that keeps data sorted and allows searches and sequential access in the same time as a B-tree but with insertions and deletions that are asymptotically faster than a B-tree.
+%  Like a B-tree, a fractal tree index is a generalization of a binary search tree in that a node can have more than two children.
+%  Furthermore, unlike a B-tree, a fractal tree index has buffers at each node, which allow insertions, deletions and other changes to be stored in intermediate locations.
+%  The goal of the buffers is to schedule disk writes so that each write performs a large amount of useful work, thereby avoiding the worst-case performance of B-trees, in which each disk write may change a small amount of data on disk.
+%  Like a B-tree, fractal tree indexes are optimized for systems that read and write large blocks of data.
+%  The fractal tree index has been commercialized in databases by Tokutek.
+%  Originally, it was implemented as a cache-oblivious lookahead array,[1] but the current implementation is an extension of the Bε tree.
+% [2] The Bε is related to the Buffered Repository Tree.
+% [3] The Buffered Repository Tree has degree 2, whereas the Bε tree has degree Bε.
+%  The fractal tree index has also been used in a prototype filesystem.
+% [4][5] An open source implementation of the fractal tree index is available,[6] which demonstrates the implementation details outlined below.
 
 % uses a fraction of node storage to serve as an
 % update buffer \cite{esmet2012tokufs, bender2015and}.
 % The updates will be flush to children's buffer when current node's buffer is full and applied until they
 % reach the leaf.
 % This optimization aims to avoid frequent small writes to disk.
-
 % However, propagating updates also introduce write amplification problem.
+
+Masstree
+
 % \masst \cite{mao2012cache} partitions key into 8-byte segments and index them with a trie structure.
 % Within each trie node, a concurrent \bt is used to index the segments.
 % Similar to \sys, \masst uses optimistic concurrency control to ensure read/write atomicity and uses
 % fine-grained locks to protect nodes during split and merge.
 
+A-tree
+
+% In this paper, we present a novel data-aware index structure called FITing-Tree which approximates an index using piece-wise linear functions with a bounded error specified at construction time.
+% This error knob provides a tunable parameter that allows a DBA to FIT an index to a dataset and workload by being able to balance lookup performance and space consumption.
+% To navigate this tradeoff, we provide a cost model that helps determine an appropriate error parameter given either (1) a lookup latency requirement (e.g., 500ns) or (2) a storage budget (e.g., 100MB).
+% Using a variety of real-world datasets, we show that our index is able to provide performance that is comparable to full index structures while reducing the storage footprint by orders of magnitude.
+
+Wormhole
+
+% In this paper we introduce a new ordered index structure, named Wormhole, that takes O(log L) worst-case time for looking up a key with a length of L.
+%  The low cost is achieved by simultaneously leveraging strengths of three indexing structures, namely hash table, prefix tree, and B+ tree, to orchestrate a single fast ordered index.
+%  Wormhole’s range operations can be performed by a linear scan of a list after an initial lookup.
+%  This improvement of access efficiency does not come at a price of compromised space efficiency.
+%  Instead, Wormhole’s index space is comparable to those of B+ tree and skip list.
+%  Experiment results show that Wormhole outperforms skip list, B+ tree, ART, and Masstree by up to 8.4×, 4.9×, 4.3×, and 6.6× in terms of key lookup throughput, respectively.
+
 \subsection{字典树及其变种}
 
 Hot
 
+% We present the Height Optimized Trie (HOT), a fast and spaceefficient in-memory index structure.
+% The core algorithmic idea of HOT is to dynamically vary the number of bits considered at each node, which enables a consistently high fanout and thereby good cache efficiency.
+% The layout of each node is carefully engineered for compactness and fast search using SIMD instructions.
+% Our experimental results, which use a wide variety of workloads and data sets, show that HOT outperforms other state-of-the-art index structures for string keys both in terms of search performance and memory footprint, while being competitive for integer keys.
+% We believe that these properties make HOT highly useful as a general-purpose index structure for main-memory databases.
+
 SuRF
+
+% We present the Succinct Range Filter (SuRF), a fast and compact data structure for approximate membership tests.
+% Unlike traditional Bloom filters, SuRF supports both single-key lookups and common range queries: open-range queries, closed-range queries, and range counts.
+% SuRF is based on a new data structure called the Fast Succinct Trie (FST) that matches the point and range query performance of state-of-the-art order-preserving indexes, while consuming only 10 bits per trie node.
+% The false positive rates in SuRF for both point and range queries are tunable to satisfy different application needs.
+% We evaluate SuRF in RocksDB as a replacement for its Bloom filters to reduce I/O by filtering requests before they access on-disk data structures.
+% Our experiments on a 100 GB dataset show that replacing RocksDB’s Bloom filters with SuRFs speeds up open-seek (without upper-bound) and closed-seek (with upper-bound) queries by up to 1.5× and 5× with a modest cost on the worst-case (all-missing) point query throughput due to slightly higher false positive rate.
 
 \subsection{哈希表及其变种}
 
 Cuckoo Hash
 
+% We present a simple dictionary with worst case constant lookup time, equal- ing the theoretical performance of the classic dynamic perfect hashing scheme of Dietzfelbinger et al.
+% The space usage is similar to that of binary search trees, i.e., three words per key on average.
+% Besides being conceptually much simpler than previous dynamic dictionaries with worst case constant lookup time, our data structure is interesting in that it does not use perfect hashing, but rather a variant of open addressing where keys can be moved back in their probe sequences.
+% An implementation inspired by our algorithm, but using weaker hash func- tions, is found to be quite practical.
+% It is competitive with the best known dictionaries having an average case (but no nontrivial worst case) guarantee.
+
 Level Hash
+
+% Non-volatile memory (NVM) as persistent memory is expected to substitute or complement DRAM in memory hierarchy, due to the strengths of non-volatility, high density, and near-zero standby power.
+% However, due to the requirement of data consistency and hardware limita- tions of NVM, traditional indexing techniques originally designed for DRAM become inefficient in persistent memory.
+% To efficiently index the data in persistent memory, this paper proposes a write-optimized and high-performance hashing index scheme, called level hashing, with low-overhead consistency guarantee and cost-efficient resizing.
+% Level hashing provides a sharing- based two-level hash table, which achieves a constant- scale search/insertion/deletion/update time complexity in the worst case and rarely incurs extra NVM writes.
+% To guarantee the consistency with low overhead, level hash- ing leverages log-free consistency schemes for insertion, deletion, and resizing operations, and an opportunistic log-free scheme for update operation.
+% To cost-efficiently resize this hash table, level hashing leverages an in- place resizing scheme that only needs to rehash 1/3 of buckets instead of the entire table, thus significantly reducing the number of rehashed buckets and improving the resizing performance.
+% Experimental results demon- strate that level hashing achieves 1.4×−3.0× speedup for insertions, 1.2×−2.1× speedup for updates, and over 4.3× speedup for resizing, while maintaining high search and deletion performance, compared with state- of-the-art hashing schemes.
 
 \subsection{布隆过滤器}
 
 Bloom filter
 
+% 布隆过滤器（英语：Bloom Filter）是1970年由布隆提出的。
+% 它实际上是一个很长的二进制向量和一系列随机映射函数。
+% 布隆过滤器可以用于检索一个元素是否在一个集合中。
+% 它的优点是空间效率和查询时间都远远超过一般的算法，缺点是有一定的误识别率和删除困难。
+
+% 如果想判断一个元素是不是在一个集合里，一般想到的是将集合中所有元素保存起来，然后通过比较确定。
+% 链表、树、散列表（又叫哈希表，Hash table）等等数据结构都是这种思路。
+% 但是随着集合中元素的增加，我们需要的存储空间越来越大。
+% 同时检索速度也越来越慢，上述三种结构的检索时间复杂度分别为O(n),O(log⁡n),O(1)。
+
+% 布隆过滤器的原理是，当一个元素被加入集合时，通过K个散列函数将这个元素映射成一个位数组中的K个点，把它们置为1。
+% 检索时，我们只要看看这些点是不是都是1就（大约）知道集合中有没有它了：如果这些点有任何一个0，则被检元素一定不在；如果都是1，则被检元素很可能在。
+% 这就是布隆过滤器的基本思想。
+
 \section{机器学习}
 
 \subsection{监督学习}
 
+% Supervised learning is the machine learning task of learning a function that maps an input to an output based on example input-output pairs.
+% [1] It infers a function from labeled training data consisting of a set of training examples.
+% [2] In supervised learning, each example is a pair consisting of an input object (typically a vector) and a desired output value (also called the supervisory signal).
+%  A supervised learning algorithm analyzes the training data and produces an inferred function, which can be used for mapping new examples.
+%  An optimal scenario will allow for the algorithm to correctly determine the class labels for unseen instances.
+%  This requires the learning algorithm to generalize from the training data to unseen situations in a "reasonable" way (see inductive bias).
+
 \subsection{回归问题}
 
+% In statistical modeling, regression analysis is a set of statistical processes for estimating the relationships among variables.
+% It includes many techniques for modeling and analyzing several variables, when the focus is on the relationship between a dependent variable and one or more independent variables (or 'predictors').
+% More specifically, regression analysis helps one understand how the typical value of the dependent variable (or 'criterion variable') changes when any one of the independent variables is varied, while the other independent variables are held fixed.
+% Many techniques for carrying out regression analysis have been developed.
+
+% Familiar methods such as linear regression and ordinary least squares regression are parametric, in that the regression function is defined in terms of a finite number of unknown parameters that are estimated from the data.
+% Nonparametric regression refers to techniques that allow the regression function to lie in a specified set of functions, which may be infinite-dimensional.
+
 \subsection{自动机器学习}
+
+% Machine learning techniques have deeply rooted in our everyday life.
+% However, since it is knowledge- and labor-intensive to pursue good learning performance, humans are heavily involved in every aspect of machine learning.
+% To make machine learning techniques easier to apply and reduce the demand for experienced human experts, automated machine learning (AutoML) has emerged as a hot topic with both industrial and academic interest.
+% In this paper, we provide an up to date survey on AutoML.
+% First, we introduce and define the AutoML problem, with inspiration from both realms of automation and machine learning.
+% Then, we propose a general AutoML framework that not only covers most existing approaches to date, but also can guide the design for new methods.
+% Subsequently, we categorize and review the existing works from two aspects, i.e., the problem setup and the employed techniques.
+% The proposed framework and taxonomies provide a detailed analysis of AutoML approaches and explain the reasons underneath their successful applications.
+% We hope this survey can serve as not only an insightful guideline for AutoML beginners but also an inspiration for future research.
 
 \section{学习索引结构}
 
 \subsection{递归模型索引}
+
+% The insight is that indexes can
+% be viewed as functions from the data (keys) to the values which represent either
+% record positions in a sorted array (for range index), positions in an unsorted array
+% (for Hash-Index) or whether the data exists or not (for BitMap-Index).
+% For the case of range index, the function is effectively a cumulative distribution
+% function (CDF). Given the CDF $F$, the positions can be predicted by:
+%  $p=F(\text{Key}) \times N$, where $p$ is the position of the key and $N$ is the total number of keys.
+
+% The core idea is to approximate the CDF function $F$ with machine learning models
+% such as deep neural networks. While the choice of the model architectures
+% can vary, the paper proposes a \emph{staged model} architecture inspired by
+% the multi-stage structure of \bt. The sub-model at each internal stage predicts
+% which sub-models to be activated in the next stage while the leaf stage
+% directly predicts the CDF values. The models are trained from the root stage
+% to the leaf stage, and each stage is trained separately using the following loss
+% function:
+% $L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2~;~L_0=\sum_{(x,y)}(f_0(x)-y)^2$, $(x,y)$ is the $(key, CDF\ value)$ pair from the dataset;
+% $L_l$ is stage $l$'s loss function; $f_l^{(k)}$ is the $k^{th}$ sub-model of stage $l$; $M_l$ is the number of models at stage $l$.
+% $f_{l-1}$ recursively executes above equation to the root
+% stage $L_0$.
+
+% To deploy the learned index, the approximation error needs to be corrected.
+% The prediction error can be bounded by the maximal and minimal prediction error,
+% $max\_err$ and $min\_err$,
+% between the predicted and the actual positions for each key. Hence, if $pos$ is
+% the predicted position by the learned index, the actual position should be
+% within $[pos + min\_err, pos + max\_err]$, and a binary search can be used. The model error bound
+% $log_2(max\_err - min\_err + 1)$, denoted as $e$, is thus a critical indicator of the effectiveness. It will be more effective with a smaller $e$.

@@ -4,12 +4,156 @@
 
 \section{总览}
 
+% To achieve learned indexes' best performance, we propose
+% a new learned index system for dynamic workloads called \sys (\Cref{fig:sys}).
+% \sys incorporates read access pattern using the \textbf{Training Set Generator} and the
+% \textbf{Finalizer} and reuses pre-trained models using the \textbf{Counselor}.
+
 \section{训练集生成器}
+
+% To incorporate read access pattern, an intuitive solution is to increase the 
+% contribution of frequently accessed keys during the training process. 
+% This can be achieved by creating multiple copies of those keys in the 
+% training set. For example, considering a training set of 
+% \{(a, 0), (b, 1), (c, 2)\}, where the first element is 
+% the key and the second is its position. If the accessed ratio is 1:2:1,
+% then we double \emph{b} in the training set,
+% which becomes \{(a, 0), (b, 1), (b, 1), (c, 2)\}. 
+% In this way, the model will be trained with (b, 1) two times more than others, the prediction 
+% accuracy of \emph{b} can be improved. We evaluate this intuitive 
+% solution with the workload of Skewed 3 and the dataset D1. With the new 
+% training set, the best architecture we can find is NN16 with 275 ns average search time, 
+% which is close to the previous best architecture, 282 ns. This is because the intuitive solution does not 
+% improve the error bounds of the second stage models
+% which decide the search time. In the above evaluation, the 
+% average error bound does not improve much (5.21 vs. 5.31). 
+
+
+% % 2.2 Our solution: stretching the dataset to let the model 
+% % of high frequent access to have less keys. 
+% % 	2.2.1 Insight, the maximal error with more keys likely 
+% % 	to have small errors. 
+% % 	2.2.2 Streching dataset allows the model with freq keys have 
+% % 	less keys.
+% % 	2.2.3 We use the following formular to do the stectch.
+% % 		2.2.3.1 fomular
+% % 		2.2.3.2 discription
+% %		2.2.3.3 example  
+% % 	2.2.5 Figure shows the CDF after stretching
+% %---------------------------
+% \begin{figure}
+%     \begin{center}
+%         \includegraphics[width=0.9\columnwidth]{figure/results/stretch.eps}
+%     \end{center}
+%     \caption{
+%         \label{fig:stretch}
+%         The left figure shows CDF of original D1, while the right figure shows CDF of D1 after stretched.
+%     }
+%     \end{figure}
+%     %---------------------------
+% \textbf{``Stretch'' the dataset.} Instead of improving the prediction 
+% accuracy of the hot keys, we should focus on the error bounds 
+% of the models containing the hot keys (hot models). Since the models assigned with few keys tend to 
+% have small error bounds, we try to reduce the number of keys handled by
+% the hot models by ``stretching'' the dataset.
+% If a key is frequently accessed, we would like to increase 
+% the distance between it with its neighbors, the key before or 
+% after it. It can be achieved by simply shifting the position 
+% labels. 
+% Specifically, given a key with position $p$ before ``stretching'', if its access frequency is $f$, and the dataset size is $N$
+% then we need to shift its position to be $p + (n-1)/2$, and shift 
+% all keys after it with $n-1$. For the above example, the training 
+% set of \{(a, 0), (b, 1), (c, 2)\} with access 
+% frequency 1:2:1 will be augmented to be \{(a, 0), (b, 1.5), (c, 3)\}. Figure~\ref{fig:stretch} shows the CDF of dataset 1 
+% before and after ``stretching'' with the access pattern in workload 
+% Skewed 3. 
+
+% Training Set Generator takes the workload and dataset as 
+% input, extracts the access pattern by uniformly sampling 
+% from the workload and stretches the dataset according to the access 
+% pattern. Then it sends the stretched training set to Counselor 
+% to get a tuned model. 
+
+% Before using the returned model from Counselor, the Finalizer 
+% needs to retrain the last stage models with the original dataset. 
+% This is because the position of each key in the stretched training 
+% set is changed, we need to repair the position information 
+% with the original dataset. This process is considerably
+% fast as last models are usually linear models. For example, 
+% it only takes 118 $\mu$s to retrain one last model with 1000 keys.
 
 \subsection{数据拉伸}
 
 \section{咨询器}
 
+% After incorporating the access pattern, the only factor affecting
+% the model architecture is data distribution.
+% We notice that the best model architecture tends to be the same for similar data distributions.
+% As a result, \sys is able to cache a mapping from data distributions to 
+% models for future reusing. 
+
+% This is done by the Counselor component, which includes 
+% four modules: 
+
+% \textbf{Analyzer:} extracts distribution information 
+% by uniformly sampling K records from the generated training set, 
+% then normalize both key and position to [0, 1]. However, K needs 
+% to be large enough to avoid 
+% breaking the distribution. 
+
+% \textbf{Model cache:} maintains a mapping 
+% from the distribution of previous training set to their learning 
+% model's architure and parameters. If it receives a distribution 
+% from Analyzer, 
+% it will finds the entry in the map with the most similar 
+% distribution 
+% based on the mean square error. Then, it will send the model's 
+% information in that entry to Fine Tuner. Furthermore, if the 
+% similarity 
+% is below a threshold, it will also start the auto-tuning process. 
+
+% \textbf{Fine Tuner:} incrementally trains the model retrieved from 
+% the model cache with the training set. 
+
+% \textbf{Auto-tuner:} uses grid search to find the best model architecture in the given search 
+% space. 
+% It performs auto-tuning at the background and sends the result to 
+% the Finalizer component.
+
 \subsection{数据集匹配}
 
 \section{终结器}
+
+\section{讨论}
+
+% \textbf{Detecting the change of distribution and access pattern.} 
+% {\sys} will start to run on detecting the change of distribution or 
+% access pattern. The detection must be timely with few false positive.
+% For currently design, we simply detect this by monitoring the 
+% degradation of the peformance. However, we can use similar technique 
+% in~\cite{kang2017noscope} to improve the accuracy. 
+
+% \textbf{Extract the distribution feature from a dataset.} Currently, we 
+% simply extract the distribution by uniformly sampling the dataset. 
+% However, to avoid breaking the distribution, the sample rate varies 
+% across different dataset. As a result, it is challengin the decide the 
+% sample rate.
+
+% \textbf{Compute the similarity.}
+% Our sampled distribution representation can be regarded as a type of sequential
+% data, for which there are many machine learning models are targeting
+% \cite{greff2017lstm, cho2014learning}.
+% We believe we can further leverage learning to learn a better similarity metric.
+
+% \textbf{Efficiently find the similar distribution in Model Cache.} There can be 
+% throusands to millions entires in the Model Cache. As a result, 
+% finding the entry with most similar distribution is considerably 
+% cost. To solve this issue, we plan to use methods like
+% \cite{metwally2005efficient, ilyas2008survey} to first filter out the most relevant
+% entries before the comparison.
+
+% \textbf{Improve Auto-tuner efficiency.}
+% Grid search is slow.
+% To speed up the search, there are works that use Gaussian process to optimize
+% the search process \cite{snoek2012practical, bergstra2011algorithms, brochu2010tutorial}.
+% Similar ideas are also used in database system optimization \cite{duan2009tuning, thummala2010ituned}.

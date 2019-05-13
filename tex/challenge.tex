@@ -8,8 +8,98 @@
 
 \subsection{动态访问模式与学习索引结构的性能}
 
+% \textbf{First, the query performance is sensitive to the 
+% runtime query distribution.} We build two types of 
+% workload, uniform and skewed. The uniform workload evenly 
+% read every key in random order. Skewed workloads all have 95\% queries 
+% reading 5\% hotkeys and hotkeys reside in different ranges. The dataset 
+% is the same as \Cref{sec:the-good}.
+
+% \Cref{tab:skewdata} shows that the \li is not always better 
+% than \bt when varying the query distribution. For 
+% example, under the 1st skewed workload, \li's performance is similar to \stx,
+% and under the 3rd skewed workloads, \li is 45.2\% slower than \stx.
+% This is because each query's 
+% performance is dominated by the error bound of the 2nd stage model 
+% which predicts the position of target key; 
+% meanwhile, each model may have different error bound. 
+% % In detail, to query a key, \li first predicts the position by executing the model 
+% % ; then, it tries to find the actual position 
+% % with binary search. For current workload, the binary 
+% % search usually takes much longer time than model computation 
+% % (479ns v.s. 16ns in the uniform workload), and the search area is decided by the 
+% % maximal and minimal error of the model. Thus, the query performance 
+% % is dominated by the error bound. 
+% The last row of \Cref{tab:skewdata} gives the 
+% average error bound of the frequently accessed models. 
+% Specifically, for the skewed workload, it is the average error bound of the 
+% models predicting for 5\% hotkeys, and for uniform workload, it is the average error bound of
+% all models. The error bound of 
+% frequently accessed models in 1st and 3rd workloads is much 
+% higer than the others. As a result, \li's performance can be
+% even worse than \stx.
+
 \section{动态数据分布带来的挑战}
 
 \subsection{动态数据分布}
 
 \subsection{动态数据分布与最优学习索引结构架构}
+
+% \textbf{Second, it is costly to find the best model architecture.} It is usually expensive to decide the 
+% learning model's architecture. For example, 
+% it can take up to 10-100X of the model training time 
+% with basic search techniques such as grid search
+% \cite{becsey1968nonlinear, lavalle2004relationship, 
+% bergstra2011algorithms}. \li's stage-based design makes 
+% this task even harder, as a different stage 
+% can have a different type of models, which exponentially  
+% increases the architecture search space.
+
+% % Finding the best architecture for a learning model with 
+% % basic search techniques can easily take up to 10-100x of 
+% % the model training time\cite{becsey1968nonlinear, lavalle2004relationship, bergstra2011algorithms}. Further, the 
+% % stage-based design of \li exponentially increase the search 
+% % space for the best model architecture, as it is able to choose 
+% % different types of architectures for each learning model, e.g., 
+% % neural network (NN) or linear regression (LR). 
+
+% \input{distdata}
+% % \input{fig-load}
+% % \input{fig-ds}
+
+% To reduce the search space, an intuitive heuristic 
+% is ``if a distribution can not be fitted well with LR model,
+% then we should use a complex model, like a
+% neural netwrork (NN)''. Unfortunately, this heuristic 
+% does not work. We configure four datasets with different 
+% distributions, fix the second stage to have 10k LR models
+% and try to use this heuristic to decide the 
+% first stage model type. \Cref{tab:distdata} shows that, 
+% when using LR as the first stage model, its loss (mean square 
+% error) increases from the 1st dataset (D1) to the last (D4).
+% This means that D1 is much better fitted with LR 
+% than the others.
+% Besides, we try 
+% different NN configurations with vary number of neural
+% and depth and use the best. 
+% With the above heuristic, we should 
+% replace LR with NN of D2$\sim$D4. However, NN can only help to 
+% improve the performance for D2 and D3. There are two 
+% reasons make LR be better than NN for D4. First, NN's 
+% computation cost is much higher than LR ($\sim$80ns vs. 16ns); 
+% Second, even if the high loss value shows LR's fitting
+% result is less accurate, but it does not indicate that the second 
+% stage models cannot fit the data well.
+% % the dispatched data happen to be fitted with the second 
+% % stage models.
+% As a result, when using LR as the first 
+% stage, the average error bound is only slightly worse than using 
+% NN. Thus, for D4, LR is the model should be used in 
+% the first stage. 
+
+% Besides this heuristic, we also try to use 
+% some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to 
+% automatically search the best architecture. Even we 
+% constraint the stage number to be no larger than 2,
+% it still takes about 21 minutes to find the 
+% best architecture.
