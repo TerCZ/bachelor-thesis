@@ -30,7 +30,9 @@ B树及其变种索引结构因此被广泛地使用在数据库、文件系统�
 允许将插入、删除等修改操作临时保存在中间节点。
 通过使用缓存，这些修改只会在积累了一定数量后，才会被写入下一级节点，从而避免了B树在索引磁盘数据时，
 任何大小的写操作都会导致一次费时的磁盘读写操作。
-分形树被使用在商业数据库TokuDB[]中，同时也在一些文件系统学术原型中[]被使用。
+然而，这种将修改进行缓存并批量传播的方式同时引入了写放大（write amplification）问题，
+即对实际发生在系统里的写操作数据量，包括缓存的修改与传播，远大于用户真实写入的数据量。
+尽管如此，分形树被使用在商业数据库TokuDB[]中，同时也在一些文件系统学术原型中[]被使用。
 
 % In computer science, a fractal tree index is a tree data structure that keeps data sorted and allows searches and sequential access in the same time as a B-tree but with insertions and deletions that are asymptotically faster than a B-tree.
 %  Like a B-tree, a fractal tree index is a generalization of a binary search tree in that a node can have more than two children.
@@ -51,21 +53,38 @@ B树及其变种索引结构因此被广泛地使用在数据库、文件系统�
 % This optimization aims to avoid frequent small writes to disk.
 % However, propagating updates also introduce write amplification problem.
 
-Masstree
+Masstree[]是一种结合字典树（trie）和B树的索引结构，它将键分割为许多长度为8字节（Byte）的段（segment）并用字典树进行索引。
+因为每一个段的长度较长，一个段可以有大量不同的可能值（$2^32$，即$4294967296$），
+因此每个字典树节点需要从大量的段值中快速查找出下一字典树节点的位置。
+为解决单个字典树节点的查找性能问题，Masstree为每个字典树节点配备一个独立的B树。
+当键的长度小于等于8字节时，Masstree等价于B树。
+除此之外，Masstree是一个支持并发访问（concurrent access）的数据结构，它允许同时被多个线程（thread）发起读写操作。
+在其内部实现中，Masstree使用乐观并发控制（optimistic concurrency control，OCC）保证对数据内容的读写原子性，
+并使用细粒度锁机制（fine-grained locking）保证对元数据，包括内部节点，在更新操作下的一致性。
 
 % \masst \cite{mao2012cache} partitions key into 8-byte segments and index them with a trie structure.
 % Within each trie node, a concurrent \bt is used to index the segments.
 % Similar to \sys, \masst uses optimistic concurrency control to ensure read/write atomicity and uses
 % fine-grained locks to protect nodes during split and merge.
 
-A-tree
+FITing-Tree[]是一个利用线性函数（piece-wise linear function）对B树操作时延（latency）与内存使用（memory consumption）进行优化的索引结构。
+它通过使用线性函数拟合B树叶子节点（leaf node）中的数据分布，即键与位置的函数映射，达到节省内存空间的效果。
+与B树不同之处在于，FITing-Tree并未限制叶子节点所包含的数据量，而是限制线性函数拟合结果的误差值（error）。
+因为线性函数能够在给定的误差值范围内索引更多的数据，因此FITing-Tree的叶子节点远大于B树，从而降低中间节点的耗时，进而降低索引操作的时延。
+相比于传统的节点结构，线性函数所需要的内存空间十分有限，从而节省大量的内存空间。
+通过控制误差值，用户可以通过FITing-Tree的成本模型（cost model）预估其查询时延与内存使用情况，从而达到期望的性能表现。
+然而，更新操作会使原有线性函数的误差值发生变化，违反用户指定的误差值，从而要求频繁对线性函数进行更新，造成索引性能下降。
+为解决这一问题，FITing-Tree使用叶子结点内部缓存的方法，牺牲部分索引性能来降低对线性函数的更新频率。
 
 % In this paper, we present a novel data-aware index structure called FITing-Tree which approximates an index using piece-wise linear functions with a bounded error specified at construction time.
 % This error knob provides a tunable parameter that allows a DBA to FIT an index to a dataset and workload by being able to balance lookup performance and space consumption.
 % To navigate this tradeoff, we provide a cost model that helps determine an appropriate error parameter given either (1) a lookup latency requirement (e.g., 500ns) or (2) a storage budget (e.g., 100MB).
 % Using a variety of real-world datasets, we show that our index is able to provide performance that is comparable to full index structures while reducing the storage footprint by orders of magnitude.
 
-Wormhole
+Wormhole[]是一种结合B树、字典树与哈希表（hash table）的索引结构，它使用由哈希表编码的字典树代替B树的中间节点来索引叶节点，提供$O(log(L))$的查找时间，其中$L$为键的长度。
+因为针对数据量较大时，B树高度以对数速度增长，然而字典树能够始终保持相对较为稳定的树高，因此Wormhole使用字典树来索引B树叶子节点的首键。
+Wormhole进一步优化字典树性能，通过将字典树中每一个节点所代表的键前缀存入哈希表，从而字典树的查找可以通过在查询键上进行二分哈希表查找完成，从而实现$O(log(L))$的查找时间。
+通过精巧设计与实现上的优化，Wormhole能够依旧保持较低的内存空间使用。
 
 % In this paper we introduce a new ordered index structure, named Wormhole, that takes O(log L) worst-case time for looking up a key with a length of L.
 %  The low cost is achieved by simultaneously leveraging strengths of three indexing structures, namely hash table, prefix tree, and B+ tree, to orchestrate a single fast ordered index.
@@ -76,7 +95,23 @@ Wormhole
 
 \subsection{字典树及其变种}
 
-Hot
+字典树，也称作前缀树，是一种基于树状结构的索引结构。
+相比于B树，字典树的高度是由被索引的键长决定的。
+字典树将键分为多个等长的段，每一段对应字典树中的一层中间节点。
+字典树的节点通过比较查找键的对应段的值，决定下一个节点的位置，因此它的节点不会像B树那样存放被索引的键的值。
+因为字典树的高度取决于键长，为避免数据量较少时树高度过大影响性能，存在许多压缩字典树的研究预防法[]。
+
+% In computer science, a trie, also called digital tree, radix tree or prefix tree, is a kind of search tree—an ordered tree data structure used to store a dynamic set or associative array where the keys are usually strings.
+% Unlike a binary search tree, no node in the tree stores the key associated with that node; instead, its position in the tree defines the key with which it is associated.
+% All the descendants of a node have a common prefix of the string associated with that node, and the root is associated with the empty string.
+% Keys tend to be associated with leaves, though some inner nodes may correspond to keys of interest.
+% Hence, keys are not necessarily associated with every node.
+% For the space-optimized presentation of prefix tree, see compact prefix tree.
+
+Height Optimized Trie[]（HOT）是一种基于字典树的空间高效索引结构。
+HOT的思想在于动态的变化每个节点所需要的内存大小，达到稳定的高节点扇出值，从而优化字典树的高度与内存使用的效率。
+通过将原有的字典树节点合并在一起，HOT使用合并节点（combined node）来保证高扇出的同时，整体树高保持在一个较低的水平。
+节点的布局设计通过高效的工程实践达到紧凑的效果，并且允许使用单指令流多数据流（Single Instruction Multiple Data，SIMD）指令进行快速搜索。
 
 % We present the Height Optimized Trie (HOT), a fast and spaceefficient in-memory index structure.
 % The core algorithmic idea of HOT is to dynamically vary the number of bits considered at each node, which enables a consistently high fanout and thereby good cache efficiency.
@@ -84,7 +119,7 @@ Hot
 % Our experimental results, which use a wide variety of workloads and data sets, show that HOT outperforms other state-of-the-art index structures for string keys both in terms of search performance and memory footprint, while being competitive for integer keys.
 % We believe that these properties make HOT highly useful as a general-purpose index structure for main-memory databases.
 
-SuRF
+Succinct Range Filter[]（SuRF）是一种简明数据结构\footnote{一种使用接近信息编码的下界的空间使用来存储数据的数据结构}（succinct data structure），它的核心是一个Fast Succinct Trie（FST）。
 
 % We present the Succinct Range Filter (SuRF), a fast and compact data structure for approximate membership tests.
 % Unlike traditional Bloom filters, SuRF supports both single-key lookups and common range queries: open-range queries, closed-range queries, and range counts.
