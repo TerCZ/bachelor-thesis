@@ -120,6 +120,10 @@ HOT的思想在于动态的变化每个节点所需要的内存大小，达到�
 % We believe that these properties make HOT highly useful as a general-purpose index structure for main-memory databases.
 
 Succinct Range Filter[]（SuRF）是一种简明数据结构\footnote{一种使用接近信息编码的下界的空间使用来存储数据的数据结构}（succinct data structure），它的核心是一个Fast Succinct Trie（FST）。
+SuRF通过将储存的键通过简明编码的字典树进行索引，从而允许高效地达到范围查询的过滤器功能，即不用真实查询磁盘即知道范围内的键是否存在，有效减少范围查找对磁盘的访问开销。
+SuRF基于以下观察：对于一棵字典树来说，上层节点较少但访问频繁，而下层节点则相对的访问较少缺占据较大空间。
+因此，SuRF使用了两种数据结构来分别处理这两类节点，即热节点与冷节点。
+在较上层使用了LOUDS-Dense的编码方式来存储节点，注重高效的查询效率。在较下层使用LOUDS-Sparse的编码方式来存储节点，注重空间的利用率。
 
 % We present the Succinct Range Filter (SuRF), a fast and compact data structure for approximate membership tests.
 % Unlike traditional Bloom filters, SuRF supports both single-key lookups and common range queries: open-range queries, closed-range queries, and range counts.
@@ -129,6 +133,22 @@ Succinct Range Filter[]（SuRF）是一种简明数据结构\footnote{一种使�
 % Our experiments on a 100 GB dataset show that replacing RocksDB’s Bloom filters with SuRFs speeds up open-seek (without upper-bound) and closed-seek (with upper-bound) queries by up to 1.5× and 5× with a modest cost on the worst-case (all-missing) point query throughput due to slightly higher false positive rate.
 
 \subsection{哈希表及其变种}
+
+哈希表是一类利用哈希函数进行散列操作，提供常数时间查询性能的索引结构。
+哈希函数对输入的键，计算一个索引位置，尽可能将原分布的键均匀分散在索引空间中。
+理想情况下，哈希函数能够将键分散到唯一位置上，实际中哈希函数可能对不同的键输出同一索引位置，这种情况成为哈希冲突（hash collision）。
+为解决哈希冲突的问题，常见的做法包括将冲突的键通过链表的方式存放在同一个索引位置下方，在查询时遍历所有匹配的键并比较真实键的值。
+因此，哈希表的性能取决于哈希函数的计算速度以及其散列的能力。
+此外，哈希表不支持范围查询。
+
+% In computing, a hash table (hash map) is a data structure that implements an associative array abstract data type, a structure that can map keys to values.
+% A hash table uses a hash function to compute an index into an array of buckets or slots, from which the desired value can be found.
+% Ideally, the hash function will assign each key to a unique bucket, but most hash table designs employ an imperfect hash function, which might cause hash collisions where the hash function generates the same index for more than one key.
+% Such collisions must be accommodated in some way.
+% In a well-dimensioned hash table, the average cost (number of instructions) for each lookup is independent of the number of elements stored in the table.
+% Many hash table designs also allow arbitrary insertions and deletions of key-value pairs, at (amortized[2]) constant average cost per operation.[3][4]
+% In many situations, hash tables turn out to be on average more efficient than search trees or any other table lookup structure.
+% For this reason, they are widely used in many kinds of computer software, particularly for associative arrays, database indexing, caches, and sets.
 
 Cuckoo Hash
 
