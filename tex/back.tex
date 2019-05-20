@@ -4,6 +4,7 @@
 
 \section{传统索引结构}
 
+索引是一类用于提高数据查询效率的数据结构。
 传统索引结构按照数据结构可以分为基于树结构的索引与基于哈希函数的索引，根据功能可以分为范围查询索引、点查询索引和存在索引。
 {\li}受传统索引结构启发与影响，了解传统索引结构有助于更好理解{\li}与本文的研究内容。
 
@@ -153,7 +154,7 @@ SuRF基于以下观察：对于一棵字典树来说，上层节点较少但访�
 % In many situations, hash tables turn out to be on average more efficient than search trees or any other table lookup structure.
 % For this reason, they are widely used in many kinds of computer software, particularly for associative arrays, database indexing, caches, and sets.
 
-Cuckoo Hash是简单的哈希表结构，能够提供最坏情况下常数时间的查询时间，接近于经典的完美哈希[]（perfect hashing）的理论性能。它的空间使用情况接近于二分搜索树，即平均每个键需要3个字长（word）。
+Cuckoo Hash[]是简单的哈希表结构，能够提供最坏情况下常数时间的查询时间，接近于经典的完美哈希[]（perfect hashing）的理论性能。它的空间使用情况接近于二分搜索树，即平均每个键需要3个字长（word）。
 Cuckoo Hash并未使用完美哈希算法，而是通过一种开放寻址（open addressing）的变种算法，允许键在探寻序列（probing sequence）中的移动来得到优异性能。
 对于一个键，Cuckoo Hash通过计算两个不同的哈希函数来避免哈希冲突。
 插入时，两个哈希函数的计算结果都可作为插入位置，若两个位置都被占用了，其中一个占用的键将会被移动到其另一个哈希函数的计算结果指定的位置。
@@ -165,7 +166,7 @@ Cuckoo Hash并未使用完美哈希算法，而是通过一种开放寻址（ope
 % An implementation inspired by our algorithm, but using weaker hash func- tions, is found to be quite practical.
 % It is competitive with the best known dictionaries having an average case (but no nontrivial worst case) guarantee.
 
-Level Hash是一个针对非易失性内存（Non-volatile memory，NVM）、对写优化的一种索引结构，弥补了传统索引结构受数据一致性（consistency）限制而产生的在持久性内存下性能下降的问题。
+Level Hash[]是一个针对非易失性内存（Non-volatile memory，NVM）、对写优化的一种索引结构，弥补了传统索引结构受数据一致性（consistency）限制而产生的在持久性内存下性能下降的问题。
 Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况下常数时间的搜索、插入、删除和更行操作，并且极少触发昂贵的非易失性内存的额外写操作。
 为了实现低开销的一致性保证，Level Hash对插入、删除和大小调整（resize）使用无日志（log-free）一致性方案，对更新使用乐观无日志一致性方案。
 为了提供高性价比的大小调整操作，Level Hash通过原地（inplace）大小调整方案，只需对$1/3$的键进行重哈希（rehash）操作，从而大幅提高大小调整操作的性能。
@@ -180,7 +181,11 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 \subsection{布隆过滤器}
 
-Bloom filter
+布隆过滤器是一个用来判断一个键是否存在的索引结构，对于存在的键它可以给出正确的判断，而对于不存在的键它有一定概率会给出误判，即假阳性（false positive）结果。
+布隆过滤器基于一系列哈希函数与一个连续数组实现。
+对于存在的键，它将每个哈希函数计算结果对应位置的数组内容置为1。
+当查询一个键时，若它的哈希函数计算结果对应位置中存在一个或一个以上的非1值（0），则表明查询键不存在，反之则认为查询键可能存在。
+布隆过滤器可以通过调整连续数组的大小来控制误判率，这给使用者平衡空间使用与误判率的一个调整参数。
 
 % 布隆过滤器（英语：Bloom Filter）是1970年由布隆提出的。
 % 它实际上是一个很长的二进制向量和一系列随机映射函数。
@@ -198,7 +203,26 @@ Bloom filter
 
 \section{机器学习}
 
+机器学习研究如何通过算法与统计学模型使计算机系统基于对模式的观察与推断可以不需要人为提供指示而可以有效地进行某项具体任务。
+其中，深度学习（Deep Learning）使目前热门的一项机器学习研究领域，它们关注如何使用深度神经网络（Deep Neural Network，DNN）完成特定的任务。
+{\li}通过使用机器学习模型与算法构建了高效的索引结构。
+
+% Machine learning (ML) is the scientific study of algorithms and statistical models that computer systems use to effectively perform a specific task without using explicit instructions, relying on patterns and inference instead.
+% It is seen as a subset of artificial intelligence.
+% Machine learning algorithms build a mathematical model based on sample data, known as "training data", in order to make predictions or decisions without being explicitly programmed to perform the task.
+% [1][2]:2 Machine learning algorithms are used in a wide variety of applications, such as email filtering, and computer vision, where it is infeasible to develop an algorithm of specific instructions for performing the task.
+% Machine learning is closely related to computational statistics, which focuses on making predictions using computers.
+% The study of mathematical optimization delivers methods, theory and application domains to the field of machine learning.
+% Data mining is a field of study within machine learning, and focuses on exploratory data analysis through unsupervised learning.[3][4] In its application across business problems, machine learning is also referred to as predictive analytics.
+
 \subsection{监督学习}
+
+监督学习使一类学习从输入到输出函数映射的机器学习任务，它会显式地提供被标注（labeled）的训练数据。
+在监督学习中，每一条训练数据都包括输入值和期望的输出值。
+监督学习算法通过对训练数据的分析来获得推断函数，这个函数将会被用来映射新的数据。
+理想情况下，推断函数能够正确地对未曾见过的输入值的输出值，然而实际中推断函数往往存在误差值。
+因此，监督学习中学习算法需要具有良好的泛化能力（generalizability）。
+与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行模型训练。
 
 % Supervised learning is the machine learning task of learning a function that maps an input to an output based on example input-output pairs.
 % [1] It infers a function from labeled training data consisting of a set of training examples.
@@ -207,7 +231,7 @@ Bloom filter
 %  An optimal scenario will allow for the algorithm to correctly determine the class labels for unseen instances.
 %  This requires the learning algorithm to generalize from the training data to unseen situations in a "reasonable" way (see inductive bias).
 
-\subsection{回归问题}
+% \subsection{回归问题}
 
 % In statistical modeling, regression analysis is a set of statistical processes for estimating the relationships among variables.
 % It includes many techniques for modeling and analyzing several variables, when the focus is on the relationship between a dependent variable and one or more independent variables (or 'predictors').
@@ -217,7 +241,22 @@ Bloom filter
 % Familiar methods such as linear regression and ordinary least squares regression are parametric, in that the regression function is defined in terms of a finite number of unknown parameters that are estimated from the data.
 % Nonparametric regression refers to techniques that allow the regression function to lie in a specified set of functions, which may be infinite-dimensional.
 
-\subsection{自动机器学习}
+\subsection{自动机器学习（Automated machine learning，AutoML）}
+
+自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实世界问题上的流程，是目前热门的研究领域。
+在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作。
+此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的机器学习模型预测性能。
+这些工作为机器学习的应用带来了巨大的挑赞。
+自动机器学习通过基于机器学习本身的方法，来解决上述应用机器学习的挑战。
+目前，在特定任务上，自动机器学习可以给出接近甚至超过人工设计的机器学习方案。
+然而，自动机器学习也对训练数据、训练方法以及模型选择本身提出了挑战。
+
+% Automated machine learning (AutoML) is the process of automating the end-to-end process of applying machine learning to real-world problems.
+% In a typical machine learning application, practitioners must apply the appropriate data pre-processing, feature engineering, feature extraction, and feature selection methods that make the dataset amenable for machine learning.
+% Following those preprocessing steps, practitioners must then perform algorithm selection and hyperparameter optimization to maximize the predictive performance of their final machine learning model.
+% As many of these steps are often beyond the abilities of non-experts, AutoML was proposed as an artificial intelligence-based solution to the ever-growing challenge of applying machine learning.
+% [1][2] Automating the end-to-end process of applying machine learning offers the advantages of producing simpler solutions, faster creation of those solutions, and models that often outperform models that were designed by hand.
+
 
 % Machine learning techniques have deeply rooted in our everyday life.
 % However, since it is knowledge- and labor-intensive to pursue good learning performance, humans are heavily involved in every aspect of machine learning.
@@ -229,24 +268,40 @@ Bloom filter
 % The proposed framework and taxonomies provide a detailed analysis of AutoML approaches and explain the reasons underneath their successful applications.
 % We hope this survey can serve as not only an insightful guideline for AutoML beginners but also an inspiration for future research.
 
-\section{学习索引结构}
+\section{\li}
 
-\subsection{递归模型索引}
+\{li}提出了使用机器学习模型完成索引工作的图景，并提出一系列使用机器学习模型的索引结构设计初步地评估了{\li}地有效性。
+\{li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
+\{li}实际上所做的即是高效地学习所需要的函数映射。
+其中{\rmi}（recursive-model index， RMI）为其中关键数据结构。
+
+\subsection{{\rmi}}
+
+对于范围索引，所需要的函数映射实际上是键的{\cdf}（Cumulative Distribution Function，CDF）。
+给定键$Key$和{\cdf}$F$，数据的位置可以通过$pos=F(Key) \times N$得到，其中$N$是被索引的键的总数。
 
 % The insight is that indexes can
 % be viewed as functions from the data (keys) to the values which represent either
 % record positions in a sorted array (for range index), positions in an unsorted array
 % (for Hash-Index) or whether the data exists or not (for BitMap-Index).
 % For the case of range index, the function is effectively a cumulative distribution
-% function (CDF). Given the CDF $F$, the positions can be predicted by:
+% function (CDF).
+% Given the CDF $F$, the positions can be predicted by:
 %  $p=F(\text{Key}) \times N$, where $p$ is the position of the key and $N$ is the total number of keys.
 
+{\rmi}的核心想法使通过机器学习模型来学习{\cdf}$F$，比如深度神经网络。
+尽管可以使用各种模型来完成这一任务，受B树结构启发，原论文提出一种多级的模型架构，除第一级外每级包含多个模型。
+在中间的级，通过模型学习的{\cdf}预测结果来决定下一级使用的模型，而在最后一级的模型的预测结构将作为对键{\cdf}值的最终预测。
+
 % The core idea is to approximate the CDF function $F$ with machine learning models
-% such as deep neural networks. While the choice of the model architectures
+% such as deep neural networks.
+% While the choice of the model architectures
 % can vary, the paper proposes a \emph{staged model} architecture inspired by
-% the multi-stage structure of \bt. The sub-model at each internal stage predicts
+% the multi-stage structure of \bt.
+% The sub-model at each internal stage predicts
 % which sub-models to be activated in the next stage while the leaf stage
-% directly predicts the CDF values. The models are trained from the root stage
+% directly predicts the CDF values.
+% The models are trained from the root stage
 % to the leaf stage, and each stage is trained separately using the following loss
 % function:
 % $L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2~;~L_0=\sum_{(x,y)}(f_0(x)-y)^2$, $(x,y)$ is the $(key, CDF\ value)$ pair from the dataset;
@@ -257,7 +312,10 @@ Bloom filter
 % To deploy the learned index, the approximation error needs to be corrected.
 % The prediction error can be bounded by the maximal and minimal prediction error,
 % $max\_err$ and $min\_err$,
-% between the predicted and the actual positions for each key. Hence, if $pos$ is
+% between the predicted and the actual positions for each key.
+% Hence, if $pos$ is
 % the predicted position by the learned index, the actual position should be
-% within $[pos + min\_err, pos + max\_err]$, and a binary search can be used. The model error bound
-% $log_2(max\_err - min\_err + 1)$, denoted as $e$, is thus a critical indicator of the effectiveness. It will be more effective with a smaller $e$.
+% within $[pos + min\_err, pos + max\_err]$, and a binary search can be used.
+% The model error bound
+% $log_2(max\_err - min\_err + 1)$, denoted as $e$, is thus a critical indicator of the effectiveness.
+% It will be more effective with a smaller $e$.
