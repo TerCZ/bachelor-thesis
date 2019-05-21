@@ -2,6 +2,11 @@
 \chapter{相关技术背景}
 \label{chap:back}
 
+% 分布式数据库系统作为网络应用存储数据的基石，一直备受产业界和学术界 的关注，而设计与实现高性能分布式数据库系统，也是当下的热点研究方向。
+% 本节首先介绍非确定性数据库（章节2.1）与确定性数据库系统（章节2.2）。接 着，系统地介绍 Calvin——现有的分布式确定性数据库系统（章节2.3）。
+% 然后，简 述了与本文相关的并发控制与事务模型（章节2.4）。
+% 最后，本章进行了小结（章 节2.5）。
+
 \section{传统索引结构}
 
 索引是一类用于提高数据查询效率的数据结构。
@@ -273,7 +278,7 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 \{li}提出了使用机器学习模型完成索引工作的图景，并提出一系列使用机器学习模型的索引结构设计初步地评估了{\li}地有效性。
 \{li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
 \{li}实际上所做的即是高效地学习所需要的函数映射。
-论文提出了三类学习索引------有序索引、无序索引和存在索引，
+论文提出了三类学习索引{------}有序索引、无序索引和存在索引，
 其中有序索引与无序索引使用相同的模型设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
 
 \subsection{{\rmi}}
@@ -305,7 +310,7 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 {\rmi}的核心想法使通过机器学习模型来学习{\cdf}$f$，比如深度神经网络，得到近似的{\cdf}$f'$。
 尽管可以使用各种模型来完成这一任务，受B树结构启发，原论文提出一种多级的模型架构，除第一级外每级包含多个模型。
 如图\ref{rmi}所示，在中间的级，通过模型学习的{\cdf}预测结果来决定下一级使用的模型，而在最后一级的模型的预测结构将作为对键{\cdf}值的最终预测。
-每一个模型都依据以下损失函数（loss function）进行训练------
+每一个模型都依据以下损失函数（loss function）进行训练{------}
 \[ L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2 \]
 \[ L_0=\sum_{(x,y)}(f_0(x)-y)^2 \]
 ，其中$(x,y)$是来自训练集的<键，{\cdf}值>对，
@@ -386,3 +391,6 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % An alternative approach to building existence indexes is to learn a hash function with the goal to maximize collisions among keys and among non-keys while minimizing collisions of keys and non-keys.
 % Interestingly, we can use the same probabilistic classification model as before to achieve that.
 % That is, we can create a hash function d, which maps f to a bit array of size m by scaling its output as d = f (x) ∗ m As such, we can use d as a hash function just like any other in a Bloom filter.
+
+XXX：更多{\li}介绍
+XXX：LR，NN的介绍
