@@ -217,12 +217,12 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 \subsection{监督学习}
 
-监督学习使一类学习从输入到输出函数映射的机器学习任务，它会显式地提供被标注（labeled）的训练数据。
+监督学习使一类学习从输入到输出函数映射的机器学习任务，它会显式地提供被标注（labeled）的训练数据[]。
 在监督学习中，每一条训练数据都包括输入值和期望的输出值。
 监督学习算法通过对训练数据的分析来获得推断函数，这个函数将会被用来映射新的数据。
 理想情况下，推断函数能够正确地对未曾见过的输入值的输出值，然而实际中推断函数往往存在误差值。
-因此，监督学习中学习算法需要具有良好的泛化能力（generalizability）。
-与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行模型训练。
+因此，监督学习中学习算法需要具有良好的泛化能力（generalizability）[]。
+与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行模型训练[]。
 
 % Supervised learning is the machine learning task of learning a function that maps an input to an output based on example input-output pairs.
 % [1] It infers a function from labeled training data consisting of a set of training examples.
@@ -243,9 +243,9 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 \subsection{自动机器学习（Automated machine learning，AutoML）}
 
-自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实世界问题上的流程，是目前热门的研究领域。
-在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作。
-此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的机器学习模型预测性能。
+自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实世界问题上的流程，是目前热门的研究领域[]。
+在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作[]。
+此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的机器学习模型预测性能[]。
 这些工作为机器学习的应用带来了巨大的挑赞。
 自动机器学习通过基于机器学习本身的方法，来解决上述应用机器学习的挑战。
 目前，在特定任务上，自动机器学习可以给出接近甚至超过人工设计的机器学习方案。
@@ -273,12 +273,14 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 \{li}提出了使用机器学习模型完成索引工作的图景，并提出一系列使用机器学习模型的索引结构设计初步地评估了{\li}地有效性。
 \{li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
 \{li}实际上所做的即是高效地学习所需要的函数映射。
-其中{\rmi}（recursive-model index， RMI）为其中关键数据结构。
+论文提出了三类学习索引------有序索引、无序索引和存在索引，
+其中有序索引与无序索引使用相同的模型设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
 
 \subsection{{\rmi}}
 
 对于范围索引，所需要的函数映射实际上是键的{\cdf}（Cumulative Distribution Function，CDF）。
-给定键$Key$和{\cdf}$F$，数据的位置可以通过$pos=F(Key) \times N$得到，其中$N$是被索引的键的总数。
+给定键$Key$和{\cdf}$f$，数据的位置可以通过对{\cdf}放大$N$倍得到，其中$N$是被索引的键的总数。
+\[ pos=f(Key) \times N \]
 
 % The insight is that indexes can
 % be viewed as functions from the data (keys) to the values which represent either
@@ -289,9 +291,27 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % Given the CDF $F$, the positions can be predicted by:
 %  $p=F(\text{Key}) \times N$, where $p$ is the position of the key and $N$ is the total number of keys.
 
-{\rmi}的核心想法使通过机器学习模型来学习{\cdf}$F$，比如深度神经网络。
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {{\rmi}结构示意图}
+    {English caption}
+  \label{fig:rmi}
+\end{figure}
+
+{\rmi}的核心想法使通过机器学习模型来学习{\cdf}$f$，比如深度神经网络，得到近似的{\cdf}$f'$。
 尽管可以使用各种模型来完成这一任务，受B树结构启发，原论文提出一种多级的模型架构，除第一级外每级包含多个模型。
-在中间的级，通过模型学习的{\cdf}预测结果来决定下一级使用的模型，而在最后一级的模型的预测结构将作为对键{\cdf}值的最终预测。
+如图\ref{rmi}所示，在中间的级，通过模型学习的{\cdf}预测结果来决定下一级使用的模型，而在最后一级的模型的预测结构将作为对键{\cdf}值的最终预测。
+每一个模型都依据以下损失函数（loss function）进行训练------
+\[ L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2 \]
+\[ L_0=\sum_{(x,y)}(f_0(x)-y)^2 \]
+，其中$(x,y)$是来自训练集的<键，{\cdf}值>对，
+$L_l$是第$l$级的损失函数，$f_l^{(k)}$是第$l$级的第$k$个子模型，$M_l$是第$l$级的子模型数量。
+$f_l$会递归地执行这一方程直到根级$L_0$。
+因为数据的分配有中间级模型决定，从根到叶子级每个模型所处理的数据不断减少，从而提高模型预测的准确度。
 
 % The core idea is to approximate the CDF function $F$ with machine learning models
 % such as deep neural networks.
@@ -309,6 +329,17 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % $f_{l-1}$ recursively executes above equation to the root
 % stage $L_0$.
 
+为了使用\{li}，预测误差值需要被纠正。
+事实上，预测误差值可以通过最大误差$max\_err$和最小误差值$min\_err$进行约束。
+\[ max\_err = \max_{key\ in\ training\ set}(f'(key)-f(key) \]
+\[ min\_err = \min_{key\ in\ training\ set}(f'(key)-f(key) \]
+因此，对于{\li}预测的数据位置$pos$，真实的数据位置应该在$[pos + min\_err, pos + max\_err]$范围内，
+这是可以通过二分查找的方法进行数据的精确定位。
+正因为如此，模型误差
+$$e = log_2(max\_err - min\_err + 1)$$
+成为表示{\li}有效性的关键指标。
+越小的模型误差将会带来越高效的{\li}。
+
 % To deploy the learned index, the approximation error needs to be corrected.
 % The prediction error can be bounded by the maximal and minimal prediction error,
 % $max\_err$ and $min\_err$,
@@ -319,3 +350,39 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % The model error bound
 % $log_2(max\_err - min\_err + 1)$, denoted as $e$, is thus a critical indicator of the effectiveness.
 % It will be more effective with a smaller $e$.
+
+\subsection{{\li}实例}
+
+对于有序索引，{\li}直接使用上述{\rmi}对{\cdf}函数进行学习，并通过计算最大误差和最小误差的方法完成数据的精确定位。
+
+对于无序索引，{\li}也可以利用数据分布学习到更好的哈希函数。
+与有序索引相反，无序索引不需要将数据按照严格的排序关系紧凑地存储在一起。
+{\li}将学习的{\cdf}函数放大$M$倍作为哈希函数，其中$M$是哈希表的目标大小。
+\[ h(key) = f'(key) \times M \]
+如果{\rmi}能够完美地学习真实{\cdf}$f$，以上哈希函数将不会产生任何冲突（当$M$大于索引数据量时）。
+除此之外，这一个学习到的哈希函数可以应用在各种哈希表架构下，因为它并没有对无序索引的实现有任何假设。
+
+% Surprisingly, learning the CDF of the key distribution is one potential way to learn a better hash function.
+% However, in contrast to range indexes, we do not aim to store the records compactly or in strictly sorted order.
+% Rather we can scale the CDF by the targeted size M of the Hash-map and use h(K) = F(K)∗M, with key K as our hash-function.
+% If the model F perfectly learned the empirical CDF of the keys, no conflicts would exist.
+% Furthermore, the hash-function is orthogonal to the actual Hash-map architecture and can be combined with separate chaining or any other Hash-map type.
+
+% For the model, we can again leverage the recursive model architecture from the previous section.
+% Obviously, like before, there exists a trade-off between the size of the index and performance, which is influenced by the model and dataset.
+
+存在索引可以通过两种方案在{\li}中实现。一种方法是将存在索引视为二分概率分类任务（binary probabilistic classification task）。
+通过机器学习模型来预测查询键$key$是否是一个存在的键。
+比如说，对于字符串，{\li}可以使用循环神经网络与卷积神经网络来完成这一分类任务。
+学习过程中需要提供不存在的键已告知机器学习模型有关不存在的键的相关信息。
+% One way to frame the existence index is as a binary probabilistic classification task.
+% That is, we want to learn a model f that can predict if a query x is a key or non-key.
+% For example, for strings we can train a recurrent neural network (RNN) or convolutional neural network (CNN) [37, 64] with D = {(x i ,y i = 1)|x i ∈ K} ∪ {(x i ,y i = 0)|x i ∈ U}.
+% Because this is a binary classification task, our neural network has a sigmoid activation to produce a probability and is trained to minimize the log loss:  L = (x,y)∈D y log f (x) + (1 − y) log(1 − f (x)).
+另一种方式是通过学习一种哈希函数来最大化存在的键之间的冲突，最大化不存在的键之间的冲突，并最小化存在的键与不存在的键的冲突。
+这种方法可以视为是对布隆过滤器的优化，因为它仅仅替换了布隆过滤器中的哈希函数，而仍然依赖布隆过滤器的算法来完成存在索引任务。
+有趣的是，这一哈希函数同样可以通过循环神经网络与卷积神经网络进行学习。
+
+% An alternative approach to building existence indexes is to learn a hash function with the goal to maximize collisions among keys and among non-keys while minimizing collisions of keys and non-keys.
+% Interestingly, we can use the same probabilistic classification model as before to achieve that.
+% That is, we can create a hash function d, which maps f to a bit array of size m by scaling its output as d = f (x) ∗ m As such, we can use d as a hash function just like any other in a Bloom filter.
