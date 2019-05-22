@@ -77,13 +77,6 @@ XXX
 % performance is dominated by the error bound of the 2nd stage model 
 % which predicts the position of target key; 
 % meanwhile, each model may have different error bound. 
-% % In detail, to query a key, \li first predicts the position by executing the model 
-% % ; then, it tries to find the actual position 
-% % with binary search. For current workload, the binary 
-% % search usually takes much longer time than model computation 
-% % (479ns v.s. 16ns in the uniform workload), and the search area is decided by the 
-% % maximal and minimal error of the model. Thus, the query performance 
-% % is dominated by the error bound. 
 % The last row of \Cref{tab:skewdata} gives the 
 % average error bound of the frequently accessed models. 
 % Specifically, for the skewed workload, it is the average error bound of the 
@@ -122,17 +115,7 @@ XXX
 % can have a different type of models, which exponentially  
 % increases the architecture search space.
 
-% % Finding the best architecture for a learning model with 
-% % basic search techniques can easily take up to 10-100x of 
-% % the model training time\cite{becsey1968nonlinear, lavalle2004relationship, bergstra2011algorithms}. Further, the 
-% % stage-based design of \li exponentially increase the search 
-% % space for the best model architecture, as it is able to choose 
-% % different types of architectures for each learning model, e.g., 
-% % neural network (NN) or linear regression (LR). 
-
 % \input{distdata}
-% % \input{fig-load}
-% % \input{fig-ds}
 
 \begin{table}[!hpb]
   \centering
@@ -189,8 +172,6 @@ XXX
 % Second, even if the high loss value shows LR's fitting
 % result is less accurate, but it does not indicate that the second 
 % stage models cannot fit the data well.
-% % the dispatched data happen to be fitted with the second 
-% % stage models.
 % As a result, when using LR as the first 
 % stage, the average error bound is only slightly worse than using 
 % NN. Thus, for D4, LR is the model should be used in 
