@@ -2,11 +2,6 @@
 \chapter{相关技术背景}
 \label{chap:back}
 
-% 分布式数据库系统作为网络应用存储数据的基石，一直备受产业界和学术界 的关注，而设计与实现高性能分布式数据库系统，也是当下的热点研究方向。
-% 本节首先介绍非确定性数据库（章节2.1）与确定性数据库系统（章节2.2）。接 着，系统地介绍 Calvin——现有的分布式确定性数据库系统（章节2.3）。
-% 然后，简 述了与本文相关的并发控制与事务模型（章节2.4）。
-% 最后，本章进行了小结（章 节2.5）。
-
 \section{传统索引结构}
 
 索引是一类用于提高数据查询效率的数据结构。
@@ -14,6 +9,17 @@
 {\li}受传统索引结构启发与影响，了解传统索引结构有助于更好理解{\li}与本文的研究内容。
 
 \subsection{B树及其变种}
+
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {B树结构示意图}
+    {English caption}
+  \label{fig:btree}
+\end{figure}
 
 B树及其变种索引结构是最常被使用的索引结构之一\cite{graefe2001b}。
 B树是一种平衡的固定扇出（fanout）的树状结构，对于指定扇出值$B$，
@@ -210,7 +216,7 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 机器学习研究如何通过算法与统计学模型使计算机系统基于对模式的观察与推断可以不需要人为提供指示而可以有效地进行某项具体任务。
 其中，深度学习（Deep Learning）使目前热门的一项机器学习研究领域，它们关注如何使用深度神经网络（Deep Neural Network，DNN）完成特定的任务。
-{\li}通过使用机器学习模型与算法构建了高效的索引结构。
+{\li}通过使用{\model}与算法构建了高效的索引结构。
 
 % Machine learning (ML) is the scientific study of algorithms and statistical models that computer systems use to effectively perform a specific task without using explicit instructions, relying on patterns and inference instead.
 % It is seen as a subset of artificial intelligence.
@@ -227,7 +233,11 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 监督学习算法通过对训练数据的分析来获得推断函数，这个函数将会被用来映射新的数据。
 理想情况下，推断函数能够正确地对未曾见过的输入值的输出值，然而实际中推断函数往往存在误差值。
 因此，监督学习中学习算法需要具有良好的泛化能力（generalizability）[]。
-与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行模型训练[]。
+与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行{\model}训练[]。
+
+\subsection{{\lr}与{\nn}}
+
+XXX
 
 % Supervised learning is the machine learning task of learning a function that maps an input to an output based on example input-output pairs.
 % [1] It infers a function from labeled training data consisting of a set of training examples.
@@ -250,11 +260,11 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实世界问题上的流程，是目前热门的研究领域[]。
 在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作[]。
-此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的机器学习模型预测性能[]。
+此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的{\model}预测性能[]。
 这些工作为机器学习的应用带来了巨大的挑赞。
 自动机器学习通过基于机器学习本身的方法，来解决上述应用机器学习的挑战。
 目前，在特定任务上，自动机器学习可以给出接近甚至超过人工设计的机器学习方案。
-然而，自动机器学习也对训练数据、训练方法以及模型选择本身提出了挑战。
+然而，自动机器学习也对训练数据、训练方法以及{\model}选择本身提出了挑战。
 
 % Automated machine learning (AutoML) is the process of automating the end-to-end process of applying machine learning to real-world problems.
 % In a typical machine learning application, practitioners must apply the appropriate data pre-processing, feature engineering, feature extraction, and feature selection methods that make the dataset amenable for machine learning.
@@ -275,13 +285,45 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 
 \section{\li}
 
-\{li}提出了使用机器学习模型完成索引工作的图景，并提出一系列使用机器学习模型的索引结构设计初步地评估了{\li}地有效性。
+\{li}提出了使用{\model}完成索引工作的图景，并提出一系列使用{\model}的索引结构设计初步地评估了{\li}地有效性。
 \{li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
 \{li}实际上所做的即是高效地学习所需要的函数映射。
 论文提出了三类学习索引{------}有序索引、无序索引和存在索引，
-其中有序索引与无序索引使用相同的模型设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
+其中有序索引与无序索引使用相同的架构设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
 
 \subsection{{\rmi}}
+
+直接使用{\lr}、{\nn}或者其他{\model}来学习数据分布的位置充满挑战，因为使用一个{\model}将从数百万条数据的量级将误差降低到几百的水平是非常困难的。
+但同时，使用一个{\model}将从数百万条数据的量级将误差降低到几万的水平，比如使用{\model}来代替B树最根部的两层，却很容易做到。
+类似地，使用一个{\model}将从数万条数据的量级将误差降低到几百的水平也是一个相对简单的任务，因为{\model}只需要关注一部分数据。
+
+% As outlined in Section 2.3 one of the key challenges of building alternative learned models to replace B-Trees is the accuracy for last-mile search.
+% For example, reducing the prediction error to the order of hundreds from 100M records using a single model is often difficult.
+% At the same time, reducing the error to 10k from 100M, e.g., a precision gain of 100 ∗ 100 = 10000 to replace the first 2 layers of a B-Tree through a model, is much easier to achieve even with simple models.
+% Similarly, reducing the error from 10k to 100 is a simpler problem as the model can focus only on a subset of the data.
+
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {{\rmi}结构示意图}
+    {English caption}
+  \label{fig:rmi}
+\end{figure}
+
+因此{\li}提出一种递归的回归架构，{\rmi}，如图\ref{fig:rmi}所示。
+通过构建一个{\model}的层级架构，每一级的{\model}以搜索键为输入，并挑选一个下一级所用的{\model}，直到最后一级的{\model}对该搜索键对应的数据位置进行预测。
+
+% Based on that observation and inspired by the mixture of experts work [62], we propose the recursive regression model (see Figure 3).
+% That is, we build a hierarchy of models, where at each stage the model takes the key as an input and based on it picks another model, until the final stage predicts the position.
+% More formally, for our model f (x) where x is the key and y ∈ [0, N) the position, we assume at stage  there are M  models.
+% We train the model at stage 0, f 0 (x) ≈ y.
+% As such, (k) model k in stage , denoted by f  , is trained with loss:
+% Note, we use here the notation of f −1 (x) recursively exe(M f (x)/N ) cuting f −1 (x) = f −1 −1 −2 (x).
+% In total, we iteratively
+% train each stage with loss L  to build the complete model.
 
 对于范围索引，所需要的函数映射实际上是键的{\cdf}（Cumulative Distribution Function，CDF）。
 给定键$Key$和{\cdf}$f$，数据的位置可以通过对{\cdf}放大$N$倍得到，其中$N$是被索引的键的总数。
@@ -296,27 +338,18 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % Given the CDF $F$, the positions can be predicted by:
 %  $p=F(\text{Key}) \times N$, where $p$ is the position of the key and $N$ is the total number of keys.
 
-\begin{figure}[!htp]
-  \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
-  \bicaption[这里将出现在插图索引中]
-    {{\rmi}结构示意图}
-    {English caption}
-  \label{fig:rmi}
-\end{figure}
-
-{\rmi}的核心想法使通过机器学习模型来学习{\cdf}$f$，比如深度神经网络，得到近似的{\cdf}$f'$。
-尽管可以使用各种模型来完成这一任务，受B树结构启发，原论文提出一种多级的模型架构，除第一级外每级包含多个模型。
-如图\ref{rmi}所示，在中间的级，通过模型学习的{\cdf}预测结果来决定下一级使用的模型，而在最后一级的模型的预测结构将作为对键{\cdf}值的最终预测。
-每一个模型都依据以下损失函数（loss function）进行训练{------}
+{\rmi}的核心想法使通过层级化的{\model}来学习{\cdf}$f$，比如{\lr}或{\nn}，得到近似的{\cdf}$f'$。
+% 尽管可以使用各种{\model}来完成这一任务，受B树结构启发，原论文提出一种多级的{\model}架构，除第一级外每级包含多个{\model}。
+% 如图\ref{rmi}所示，在中间的级，通过{\model}学习的{\cdf}预测结果来决定下一级使用的{\model}，而在最后一级的{\model}的预测结构将作为对键{\cdf}值的最终预测。
+每一个{\model}都依据以下损失函数（loss function）进行训练{------}
 \[ L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2 \]
 \[ L_0=\sum_{(x,y)}(f_0(x)-y)^2 \]
 ，其中$(x,y)$是来自训练集的<键，{\cdf}值>对，
-$L_l$是第$l$级的损失函数，$f_l^{(k)}$是第$l$级的第$k$个子模型，$M_l$是第$l$级的子模型数量。
+$L_l$是第$l$级的损失函数，$f_l^{(k)}$是第$l$级的第$k$个子{\model}，$M_l$是第$l$级的子{\model}数量。
 $f_l$会递归地执行这一方程直到根级$L_0$。
-因为数据的分配有中间级模型决定，从根到叶子级每个模型所处理的数据不断减少，从而提高模型预测的准确度。
+因为数据的分配有中间级{\model}决定，从根到叶子级每个{\model}所处理的数据不断减少，从而提高{\model}预测的准确度。
+一种看待不同{\model}的视角是每个{\model}对给定搜索键进行带有一定误差值的预测，这一预测结果将被用来选择下一级所用到的{\model}，下一级的{\model}因此只需要负责一部分键的范围的数据，
+因此可以拥有较小的误差值。
 
 % The core idea is to approximate the CDF function $F$ with machine learning models
 % such as deep neural networks.
@@ -333,17 +366,153 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 % $L_l$ is stage $l$'s loss function; $f_l^{(k)}$ is the $k^{th}$ sub-model of stage $l$; $M_l$ is the number of models at stage $l$.
 % $f_{l-1}$ recursively executes above equation to the root
 % stage $L_0$.
+% One way to think about the different models is that each model makes a prediction with a certain error about the position for the key and that the prediction is used to select the next model, which is responsible for a certain area of the keyspace to make a better prediction with a lower error.
 
-为了使用\{li}，预测误差值需要被纠正。
+尽管如此，{\rmi}并不是一颗树。
+正如图\ref{fig:rmi}所示，很可能不同的{\model}会选择同一个下一级的{\model}。
+除此之外，每个{\model}也不一定会像B树一样包含相同数量的数据，尽管按照这个算法，如果存在无误差的完美{\model}，每个{\model}将会被分到相同数量的数据。
+最后，根据不用的{\model}选择，中间级的选择不一定需要被当作是数据位置或者{\cdf}的预测，而更应该被考虑为是选择了一个对该键有更多信息，可以做更好预测的``专家''，即选择的下一级{\model}。
+
+% However, recursive model indexes do not have to be trees.
+% As shown in Figure 3 it is possible that different models of one stage pick the same models at the stage below.
+% Furthermore, each model does not necessarily cover the same amount of records like B-Trees do (i.e., a B-Tree with a page-size of 100 covers 100 or less records).
+% 4 Finally, depending on the used models the predictions between the different stages can not necessarily be interpreted as positions estimates, rather should be considered as picking an expert which has a better knowledge about certain keys (see also [62]).
+
+这样的架构有如下优势：（1）它从执行代价中分离了{\model}的大小和复杂读；（2）它利用了学习{\cdf}的大致形状是一件较为容易的任务这一事实；（3）它有效地将数据分为了小的子范围，类似于B树将最后的精确定位的代价减少到了只需要非常少的操作即可完成；
+以及（4）在级与级之间不存在搜索定位的过程，因为我们直接使用上级{\model}的预测结果作为索引进行选取下一级的{\model}。
+
+% This model architecture has several benefits: (1) It separates model size and complexity from execution cost.
+% (2) It leverages the fact that it is easy to learn the overall shape of the data distribution.
+% (3) It effectively divides the space into smaller subranges, like a B-Tree, to make it easier to achieve the required “last mile” accuracy with fewer operations.
+% (4) There is no search process required in-between the stages.
+% For example, the output of Model 1.1 is directly used to pick the model in the next stage.
+% This not only reduces the number of instructions to manage the structure, but also allows representing the entire index as a sparse matrix-multiplication for a TPU/GPU.
+
+\subsection{{\rmi}训练与推断}
+
+\begin{algorithm}
+% \begin{algorithm}[H] % 强制定位
+\caption{{\rmi}训练}
+\label{algo:rmi-train}
+\begin{algorithmic}[1] %每行显示行号
+\Require 整形数组$stages$，数据数组$data$，{\model}信息 % 输入
+\Ensure 训练完成的{\rmi}（{\model}数组$models$） % 输出
+\State $M \gets stages.length$
+\label{rmi-train:line:stage-length}
+\State $models[][]$
+\label{rmi-train:line:init-models}
+\State $tmp\_records[][]$
+\label{rmi-train:line:init-data}
+\State $tmp\_records[1][1] \gets data$
+\label{rmi-train:line:init-data-root}
+\For{$i = 1 \to M$}
+  \For{$j = 1 \to stages[i]$}
+  \label{rmi-train:line:stage-begin}
+    \State $models[i][j] \gets model~trained~with~tmp\_records[i][j]$
+    \label{rmi-train:line:train-model}
+    \If{$i < M$}
+    \label{rmi-train:line:assign-precond}
+      \For{$rec \in tmp\_records[i][j]$}
+      \label{rmi-train:line:assign-begin}
+        \State $p \gets models[i][j].predict(rec) / stages[i+1]$
+        \State $tmp\_records[i+1][p].add(rec)$
+      \EndFor
+      \label{rmi-train:line:assign-end}
+    \EndIf
+  \EndFor
+  \label{rmi-train:line:stage-end}
+\EndFor
+\For{$j = 1 \to models[M].length$}
+\label{rmi-train:line:error-begin}
+  \State $models[M][j].calculate\_error(tmp\_records[M][j])$
+\EndFor
+\label{rmi-train:line:error-end}
+\State \Return $models$
+\label{rmi-train:line:return}
+\end{algorithmic}
+\end{algorithm}
+
+算法\ref{algo:rmi-train}是{\rmi}的训练算法。它的输入如下：
+\begin{itemize}
+  \item \textbf{整形数组$stages$}，即由{\rmi}每一级所用{\model}个数组成的数组。注意，此数组的第一个元素必须为1，因为{\rmi}的第一级只允许拥有一个{\model}，否则无法保证确定性的索引执行路径；
+  \item \textbf{数据数组$data$}，即被{\rmi}所索引的真实数据，它由所有键所对应的<键，{\cdf}值>对组成；
+  \item \textbf{{\model}信息}，即每一级的{\model}相关的配置星系，它包含{\model}类型，以及各类型{\model}特定的信息，如对于{\nn}而言，它还包含每个{\nn}所使用的隐藏层的宽度以及隐藏层的个数。
+\end{itemize}
+它的输入为完成训练后的到的训练完成的{\rmi}（{\model}数组$models$）。
+
+训练过程是每一级自上而下分别进行的，即上一级所有{\model}训练完成后才进行下一级{\model}的训练。
+训练开始，首先将{\model}层级个数记录在变量$M$中，如第\ref{rmi-train:line:stage-length}所示，并初始化{\rmi}每一级的{\model}，用二维数组$models$进行存储，如第\ref{rmi-train:line:init-models}行所示，
+最后初始化临时训练数据存储容器$tmp\_records$，这也是一个二维数组，如第\ref{rmi-train:line:init-data}。
+因为接下来所有的数据需要由第一级的唯一{\model}进行分配，
+因此该{\model}需要使用所有的数据进行训练，所以在进入分级训练前，在第\ref{rmi-train:line:init-data-root}行我们将所有数据分配给了这个{\model}，即$tmp\_records[1][1]$。
+注意，在算法中$models$与$tmp\_records$的第一个下标均表示对应{\model}或训练数据所属的层级编号，第二个下标表示对应{\model}或训练数据所属该层级中的{\model}编号。
+第\ref{rmi-train:line:stage-begin}行到第\ref{rmi-train:line:stage-end}行展示了对一个级里的{\model}训练的过程。
+在本算法中我们略去了{\model}训练过程，而用第\ref{rmi-train:line:train-model}行简单表示，这是因为不同的{\model}的训练方式各不相同，同一种{\model}也可以通过不同的优化算法进行训练，
+这些细节上的区别与{\rmi}的设计与实现都是正交的。
+若第$i$级不是最后一级（第\ref{rmi-train:line:assign-precond}），在训练第$i+1$级{\model}前，如
+第\ref{rmi-train:line:assign-begin}行到第\ref{rmi-train:line:assign-end}行所示，由刚完成训练的{\model}$models[i][j]$会将其负责的数据再次根据该{\model}的预测（训练）结果计算出下一级所应该选择的{\model}编号$p$，
+并将对应的数据添加到该下一级{\model}所对应的训练数据中，即$tmp\_records[i+1][p]$。
+当最后一级{\model}完成训练后，{\rmi}的训练也随之完成。
+在返回前，我们需要计算每个最后级{\model}的误差值，已用于{\rmi}推断，如第\ref{rmi-train:line:error-begin}行到第\ref{rmi-train:line:error-end}行所示。
+第\ref{rmi-train:line:return}行将返回通过逐级训练获得的{\model}结果，即训练后的{\model}参数。
+
+\begin{algorithm}
+% \begin{algorithm}[H] % 强制定位
+\caption{{\rmi}推断}
+\label{algo:rmi-inference}
+\begin{algorithmic}[1] %每行显示行号
+\Require 训练完成的{\rmi}（{\model}数组$models$），查询键$key$ % 输入
+\Ensure 预测的数据位置$pos$，预测的最大误差$max\_err$，预测的最小误差$min\_err$ % 输出
+\State $M \gets models.length$
+\label{rmi-inference:line:init-depth}
+\State $pred \gets null$
+\label{rmi-inference:line:init-pred}
+\State $p \gets 1$
+\label{rmi-inference:line:init-p}
+\For{$i = 1 \to M$}
+\label{rmi-inference:line:begin}
+  \State $pred = models[i][p].predict(key)$
+  \State $p = pred / models[i+1].length$
+\EndFor
+\label{rmi-inference:line:end}
+\State \Return $pred, models[M][p].max\_err, models[M][p].min\_err$
+\label{rmi-inference:line:return}
+\end{algorithmic}
+\end{algorithm}
+
+算法\ref{algo:rmi-train}是{\rmi}的推断算法。它的输入如下：
+\begin{itemize}
+  \item \textbf{训练完成的{\rmi}（{\model}数组$models$）}，即由{\model}组成的二维数组，其第一个下标表示对应{\model}所属的层级编号，第二个下标表示对应{\model}所属该层级中的{\model}编号；
+  \item \textbf{查询键$key$}，即使用{\rmi}进行查询的键。
+\end{itemize}
+它的输出如下：
+\begin{itemize}
+  \item \textbf{预测的数据位置$pos$}，即{\rmi}对输入查询键$key$对应数据位置的预测结果，该键必须是在训练是存在的键，否则预测结果将不准确；
+  \item \textbf{预测的最大误差$max\_err$}，即{\rmi}对输入查询键$key$预测误差的上界；
+  \item \textbf{预测的最小误差$min\_err$}，即{\rmi}对输入查询键$key$预测误差的下界。
+\end{itemize}
+
+与{\rmi}训练算法类似，{\rmi}推断算法也是一个自上而下逐级计算的算法。
+在推断过程的开始，算法首先从{\model}数据中获得该{\rmi}所包含的层级数$M$，如第\ref{rmi-inference:line:init-depth}行所示。
+随后初始化预测结果变量$pred$，如第\ref{rmi-inference:line:init-pred}行所示，以及下一级{\model}编号变量$p$，如第\ref{rmi-inference:line:init-p}行所示。
+这两个变量将在递归的推断过程中被使用并改变。
+第\ref{rmi-inference:line:begin}行到第\ref{rmi-inference:line:end}行展示了这一递归推断过程。
+在每一级中，算法只使用一个{\model}进行预测，并根据该{\model}的预测结果更新下一级使用的{\model}的编号。
+在进入这一递归过程之前，算法指定第一级使用的{\model}编号为1，因为第一级仅包含这一个模型，从而保证{\rmi}的推断具有一个共同的开始点。
+经过最后一级的{\model}预测之后，数据位置的预测值与最后一级所使用的{\model}编号已经分别保存在变量$pred$和$p$中。
+这时，预测结果与对应的{\model}的最大误差、最小误差，即$models[M][p].max\_err$、$models[M][p].min\_err$，一并返回给用户，
+如第\ref{rmi-inference:line:return}行所示。
+
+为了使用{\rmi}，预测误差值需要被纠正。
 事实上，预测误差值可以通过最大误差$max\_err$和最小误差值$min\_err$进行约束。
 \[ max\_err = \max_{key\ in\ training\ set}(f'(key)-f(key) \]
 \[ min\_err = \min_{key\ in\ training\ set}(f'(key)-f(key) \]
-因此，对于{\li}预测的数据位置$pos$，真实的数据位置应该在$[pos + min\_err, pos + max\_err]$范围内，
+因此，对于{\rmi}预测的数据位置$pos$，真实的数据位置应该在$[pos + min\_err, pos + max\_err]$范围内，
 这是可以通过二分查找的方法进行数据的精确定位。
-正因为如此，模型误差
+正因为如此，{\model}误差
 $$e = log_2(max\_err - min\_err + 1)$$
-成为表示{\li}有效性的关键指标。
-越小的模型误差将会带来越高效的{\li}。
+成为表示{\rmi}有效性的关键指标。
+越小的{\model}误差将会带来越高效的{\rmi}。
 
 % To deploy the learned index, the approximation error needs to be corrected.
 % The prediction error can be bounded by the maximal and minimal prediction error,
@@ -377,13 +546,14 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % Obviously, like before, there exists a trade-off between the size of the index and performance, which is influenced by the model and dataset.
 
 存在索引可以通过两种方案在{\li}中实现。一种方法是将存在索引视为二分概率分类任务（binary probabilistic classification task）。
-通过机器学习模型来预测查询键$key$是否是一个存在的键。
+通过{\model}来预测查询键$key$是否是一个存在的键。
 比如说，对于字符串，{\li}可以使用循环神经网络与卷积神经网络来完成这一分类任务。
-学习过程中需要提供不存在的键已告知机器学习模型有关不存在的键的相关信息。
+学习过程中需要提供不存在的键已告知{\model}有关不存在的键的相关信息。
 % One way to frame the existence index is as a binary probabilistic classification task.
 % That is, we want to learn a model f that can predict if a query x is a key or non-key.
 % For example, for strings we can train a recurrent neural network (RNN) or convolutional neural network (CNN) [37, 64] with D = {(x i ,y i = 1)|x i ∈ K} ∪ {(x i ,y i = 0)|x i ∈ U}.
 % Because this is a binary classification task, our neural network has a sigmoid activation to produce a probability and is trained to minimize the log loss:  L = (x,y)∈D y log f (x) + (1 − y) log(1 − f (x)).
+
 另一种方式是通过学习一种哈希函数来最大化存在的键之间的冲突，最大化不存在的键之间的冲突，并最小化存在的键与不存在的键的冲突。
 这种方法可以视为是对布隆过滤器的优化，因为它仅仅替换了布隆过滤器中的哈希函数，而仍然依赖布隆过滤器的算法来完成存在索引任务。
 有趣的是，这一哈希函数同样可以通过循环神经网络与卷积神经网络进行学习。
@@ -391,7 +561,3 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % An alternative approach to building existence indexes is to learn a hash function with the goal to maximize collisions among keys and among non-keys while minimizing collisions of keys and non-keys.
 % Interestingly, we can use the same probabilistic classification model as before to achieve that.
 % That is, we can create a hash function d, which maps f to a bit array of size m by scaling its output as d = f (x) ∗ m As such, we can use d as a hash function just like any other in a Bloom filter.
-
-XXX：更多{\li}介绍（重现啥的）
-
-XXX：LR，NN的介绍

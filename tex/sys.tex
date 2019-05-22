@@ -7,7 +7,7 @@ XXX
 \section{总览}
 
 为了实现{\li}的最佳性能，我们提出了一个新的针对动态场景的学习索引系统{------}{\sys}。
-{\sys}通过\textbf{训练集生成器（Training Set Generator）}和\textbf{终结器（Finalizer）}将访问模式信息加入到考虑范围内，通过\textbf{咨询器（Counselor）}重用已经训练好的模型。
+{\sys}通过\textbf{训练集生成器（Training Set Generator）}和\textbf{终结器（Finalizer）}将访问模式信息加入到考虑范围内，通过\textbf{咨询器（Counselor）}重用已经训练好的{\model}。
 
 % To achieve learned indexes' best performance, we propose
 % a new learned index system for dynamic workloads called \sys (\Cref{fig:sys}).
@@ -43,34 +43,34 @@ XXX
 为了实现这一点，我们可以根据其访问频率复制频繁被访问的键，构成新的训练集。
 假设一个训练集包含以下数据：$\{<a, 0>, <b, 1>, <c, 2>, <d, 3>\}$，其中每个对的第一个元素是键而第二个元素是该键对应的位置，
 如果这三个键的访问频率是$1:2:2:1$，则我们复制键$b$和$c$的训练数据，得到以下新的训练集$\{<a, 0>, <b, 1>, <b, 1>, <c, 2>, <c, 2>, <d, 3>\}$。
-通过这样，模型将会以两倍的概率被$<b, 1>$和$<c, 2>$训练，从而对键$b$和键$c$的预测准确度将会被提高。
+通过这样，{\model}将会以两倍的概率被$<b, 1>$和$<c, 2>$训练，从而对键$b$和键$c$的预测准确度将会被提高。
 我们使用第一个数据集（D1）在第三个偏向性工作负载（Skewed 3）下测试了这一种直观的方法。
 在表\ref{tab:pattern-int-sol}中，我们可以看到使用了新的训练集，最佳的{\li}架构是在第一层使用隐藏层宽度为16、隐藏层个数为1的神经网络的{\li}架构，
 其平均搜索时间为275 ns，和{\li}的性能（282 ns）非常接近。
-这是因为，这种直观的方法并不能优化模型的最大误差和最小误差，而这才是决定{\li}性能的关键因素。
-我们可以看到，处理频繁访问的键的模型的平均误差并没有较好的提升。
+这是因为，这种直观的方法并不能优化{\model}的最大误差和最小误差，而这才是决定{\li}性能的关键因素。
+我们可以看到，处理频繁访问的键的{\model}的平均误差并没有较好的提升。
 
-% To incorporate read access pattern, an intuitive solution is to increase the 
-% contribution of frequently accessed keys during the training process. 
-% This can be achieved by creating multiple copies of those keys in the 
-% training set. For example, considering a training set of 
-% \{(a, 0), (b, 1), (c, 2)\}, where the first element is 
+% To incorporate read access pattern, an intuitive solution is to increase the
+% contribution of frequently accessed keys during the training process.
+% This can be achieved by creating multiple copies of those keys in the
+% training set. For example, considering a training set of
+% \{(a, 0), (b, 1), (c, 2)\}, where the first element is
 % the key and the second is its position. If the accessed ratio is 1:2:1,
 % then we double \emph{b} in the training set,
-% which becomes \{(a, 0), (b, 1), (b, 1), (c, 2)\}. 
-% In this way, the model will be trained with (b, 1) two times more than others, the prediction 
-% accuracy of \emph{b} can be improved. We evaluate this intuitive 
-% solution with the workload of Skewed 3 and the dataset D1. With the new 
-% training set, the best architecture we can find is NN16 with 275 ns average search time, 
-% which is close to the previous best architecture, 282 ns. This is because the intuitive solution does not 
+% which becomes \{(a, 0), (b, 1), (b, 1), (c, 2)\}.
+% In this way, the model will be trained with (b, 1) two times more than others, the prediction
+% accuracy of \emph{b} can be improved. We evaluate this intuitive
+% solution with the workload of Skewed 3 and the dataset D1. With the new
+% training set, the best architecture we can find is NN16 with 275 ns average search time,
+% which is close to the previous best architecture, 282 ns. This is because the intuitive solution does not
 % improve the error bounds of the second stage models
-% which decide the search time. In the above evaluation, the 
-% average error bound does not improve much (5.21 vs. 5.31). 
+% which decide the search time. In the above evaluation, the
+% average error bound does not improve much (5.21 vs. 5.31).
 
-与其优化热键的预测误差，我们应该关注处理频繁访问的键的模型。
-因为被分配键数量较少的模型往往会拥有较小的误差范围，我们尝试使用数据拉伸的方法来减少处理频繁访问的键的模型所被分配的键的数量。
-如果一个键被频繁地访问，我们将增大其在训练集中与其他键的距离，即改变键所对应的数据位置的值，并用新的训练集来训练除了最后级之外的模型。
-因为中间级的模型会依据被拉伸后的训练集进行分配数据，因此最终在最后级分配的数据将会达到对于处理频繁访问的键的模型仅被分配少量数据的效果，
+与其优化热键的预测误差，我们应该关注处理频繁访问的键的{\model}。
+因为被分配键数量较少的{\model}往往会拥有较小的误差范围，我们尝试使用数据拉伸的方法来减少处理频繁访问的键的{\model}所被分配的键的数量。
+如果一个键被频繁地访问，我们将增大其在训练集中与其他键的距离，即改变键所对应的数据位置的值，并用新的训练集来训练除了最后级之外的{\model}。
+因为中间级的{\model}会依据被拉伸后的训练集进行分配数据，因此最终在最后级分配的数据将会达到对于处理频繁访问的键的{\model}仅被分配少量数据的效果，
 从而优化了最终频繁访问的键的查询性能。
 
 % \begin{figure}
@@ -83,15 +83,15 @@ XXX
 %     }
 %     \end{figure}
 %     %---------------------------
-% \textbf{``Stretch'' the dataset.} Instead of improving the prediction 
-% accuracy of the hot keys, we should focus on the error bounds 
-% of the models containing the hot keys (hot models). Since the models assigned with few keys tend to 
+% \textbf{``Stretch'' the dataset.} Instead of improving the prediction
+% accuracy of the hot keys, we should focus on the error bounds
+% of the models containing the hot keys (hot models). Since the models assigned with few keys tend to
 % have small error bounds, we try to reduce the number of keys handled by
 % the hot models by ``stretching'' the dataset.
-% If a key is frequently accessed, we would like to increase 
-% the distance between it with its neighbors, the key before or 
-% after it. It can be achieved by simply shifting the position 
-% labels. 
+% If a key is frequently accessed, we would like to increase
+% the distance between it with its neighbors, the key before or
+% after it. It can be achieved by simply shifting the position
+% labels.
 
 \begin{figure}[!htp]
   \centering
@@ -108,38 +108,38 @@ XXX
 对于上文提到的例子，原训练集为$\{<a, 0>, <b, 1>, <c, 2>, <d, 3>\}$且这三个键的访问频率是$1:2:2:1$，
 则在数据拉伸后的训练集为$\{<a, 0>, <b, 0.7>, <c, 2>, , <d, 3.3>\}$。
 图\ref{fig:stretch}直观地展示了针对第一个数据集（D1）在数据拉伸前后的训练集。
-我们可以明显地看到，数据拉伸很好地将热点键在训练数据中分散开，从而使用新的训练集训练中间级模型进行数据分配能够很好地减少处理频繁访问的键的模型所被分配的键的数量。
+我们可以明显地看到，数据拉伸很好地将热点键在训练数据中分散开，从而使用新的训练集训练中间级{\model}进行数据分配能够很好地减少处理频繁访问的键的{\model}所被分配的键的数量。
 
 % Specifically, given a key with position $p$ before ``stretching'', if its access frequency is $f$, and the dataset size is $N$
-% then we need to shift its position to be $p + (n-1)/2$, and shift 
-% all keys after it with $n-1$. For the above example, the training 
-% set of \{(a, 0), (b, 1), (c, 2)\} with access 
-% frequency 1:2:1 will be augmented to be \{(a, 0), (b, 1.5), (c, 3)\}. Figure~\ref{fig:stretch} shows the CDF of dataset 1 
-% before and after ``stretching'' with the access pattern in workload 
-% Skewed 3. 
+% then we need to shift its position to be $p + (n-1)/2$, and shift
+% all keys after it with $n-1$. For the above example, the training
+% set of \{(a, 0), (b, 1), (c, 2)\} with access
+% frequency 1:2:1 will be augmented to be \{(a, 0), (b, 1.5), (c, 3)\}. Figure~\ref{fig:stretch} shows the CDF of dataset 1
+% before and after ``stretching'' with the access pattern in workload
+% Skewed 3.
 
 数据集生成器将工作负载信息和原始数据作为输入，它从工作负载统计信息中通过采样的方式抓去访问模式的信息，
 并对原始数据应用数据拉伸以将访问模式信息包括在训练数据中。
-数据集生成器将生成的训练集发送给咨询器来获得一个部分训练好的模型。
+数据集生成器将生成的训练集发送给咨询器来获得一个部分训练好的{\model}。
 
-% Training Set Generator takes the workload and dataset as 
-% input, extracts the access pattern by uniformly sampling 
-% from the workload and stretches the dataset according to the access 
-% pattern. Then it sends the stretched training set to Counselor 
-% to get a tuned model. 
+% Training Set Generator takes the workload and dataset as
+% input, extracts the access pattern by uniformly sampling
+% from the workload and stretches the dataset according to the access
+% pattern. Then it sends the stretched training set to Counselor
+% to get a tuned model.
 
 \section{咨询器}
 
 当将访问模式信息考虑在训练集之后，唯一决定{\li}架构的因素是数据分布。
 我们观察发现，对于类似的数据分布，最好的{\li}架构也是类似的。
-因此，{\sys}可以通过保留一个从数据分布到训练好的模型的映射，来重用过去最优{\li}架构搜索的结果，
+因此，{\sys}可以通过保留一个从数据分布到训练好的{\model}的映射，来重用过去最优{\li}架构搜索的结果，
 减少面对动态数据分布为持续性保持{\li}优秀性能所需要的高昂搜索代价。
 
 % After incorporating the access pattern, the only factor affecting
 % the model architecture is data distribution.
 % We notice that the best model architecture tends to be the same for similar data distributions.
-% As a result, \sys is able to cache a mapping from data distributions to 
-% models for future reusing. 
+% As a result, \sys is able to cache a mapping from data distributions to
+% models for future reusing.
 
 以上功能由咨询器提供，其包括以下四部分：
 \begin{itemize}
@@ -165,32 +165,32 @@ XXX
     自动调整过程结束后，获得的{\li}架构和参数将会被发送至终结器。
 \end{itemize}
 
-% This is done by the Counselor component, which includes 
-% four modules: 
+% This is done by the Counselor component, which includes
+% four modules:
 
-% \textbf{Analyzer:} extracts distribution information 
-% by uniformly sampling K records from the generated training set, 
-% then normalize both key and position to [0, 1]. However, K needs 
-% to be large enough to avoid 
-% breaking the distribution. 
+% \textbf{Analyzer:} extracts distribution information
+% by uniformly sampling K records from the generated training set,
+% then normalize both key and position to [0, 1]. However, K needs
+% to be large enough to avoid
+% breaking the distribution.
 
-% \textbf{Model cache:} maintains a mapping 
-% from the distribution of previous training set to their learning 
-% model's architure and parameters. If it receives a distribution 
-% from Analyzer, 
-% it will finds the entry in the map with the most similar 
-% distribution 
-% based on the mean square error. Then, it will send the model's 
-% information in that entry to Fine Tuner. Furthermore, if the 
-% similarity 
-% is below a threshold, it will also start the auto-tuning process. 
+% \textbf{Model cache:} maintains a mapping
+% from the distribution of previous training set to their learning
+% model's architure and parameters. If it receives a distribution
+% from Analyzer,
+% it will finds the entry in the map with the most similar
+% distribution
+% based on the mean square error. Then, it will send the model's
+% information in that entry to Fine Tuner. Furthermore, if the
+% similarity
+% is below a threshold, it will also start the auto-tuning process.
 
-% \textbf{Fine Tuner:} incrementally trains the model retrieved from 
-% the model cache with the training set. 
+% \textbf{Fine Tuner:} incrementally trains the model retrieved from
+% the model cache with the training set.
 
-% \textbf{Auto-tuner:} uses grid search to find the best model architecture in the given search 
-% space. 
-% It performs auto-tuning at the background and sends the result to 
+% \textbf{Auto-tuner:} uses grid search to find the best model architecture in the given search
+% space.
+% It performs auto-tuning at the background and sends the result to
 % the Finalizer component.
 
 \subsection{数据集匹配}
@@ -199,18 +199,18 @@ XXX
 
 \section{终结器}
 
-在使用咨询器返回的部分训练好的模型前，终结器需要重新训练最后一级的模型。
-这是因为生成的训练集不能够反应真实的数据位置，而只是用来训练中间级模型的数据分配的，
-对于最后一级的模型，我们仍然需要使用真实的数据位置来训练这些模型。
+在使用咨询器返回的部分训练好的{\model}前，终结器需要重新训练最后一级的{\model}。
+这是因为生成的训练集不能够反应真实的数据位置，而只是用来训练中间级{\model}的数据分配的，
+对于最后一级的{\model}，我们仍然需要使用真实的数据位置来训练这些{\model}。
 这个过程往往很迅速，因为最后一级的往往是非常易于训练的{\lr}。
 比如说，使用1千条数据来训练{\lr}只需要118 $\mu$s。
 
-% Before using the returned model from Counselor, the Finalizer 
-% needs to retrain the last stage models with the original dataset. 
-% This is because the position of each key in the stretched training 
-% set is changed, we need to repair the position information 
+% Before using the returned model from Counselor, the Finalizer
+% needs to retrain the last stage models with the original dataset.
+% This is because the position of each key in the stretched training
+% set is changed, we need to repair the position information
 % with the original dataset. This process is considerably
-% fast as last models are usually linear models. For example, 
+% fast as last models are usually linear models. For example,
 % it only takes 118 $\mu$s to retrain one last model with 1000 keys.
 
 \section{讨论}
@@ -222,25 +222,25 @@ XXX
 对于当前的设计，我们通过检测性能下降来表示数据分布与访问模式的改变。
 在将来的工作中，我们可以使用类似[]的方法来提高检测数据分布与访问模式的改变的准确率。
 
-% \textbf{Detecting the change of distribution and access pattern.} 
-% {\sys} will start to run on detecting the change of distribution or 
+% \textbf{Detecting the change of distribution and access pattern.}
+% {\sys} will start to run on detecting the change of distribution or
 % access pattern. The detection must be timely with few false positive.
-% For currently design, we simply detect this by monitoring the 
-% degradation of the peformance. However, we can use similar technique 
-% in~\cite{kang2017noscope} to improve the accuracy. 
+% For currently design, we simply detect this by monitoring the
+% degradation of the peformance. However, we can use similar technique
+% in~\cite{kang2017noscope} to improve the accuracy.
 
 \subsection{从数据集中提取数据分布}
 当前，我们通过采样的方法来提取数据分布信息。
 为了准确地表示分布信息，采样率需要进行精细地调整，给系统的实用性带来一定挑战。
 
-% \textbf{Extract the distribution feature from a dataset.} Currently, we 
-% simply extract the distribution by uniformly sampling the dataset. 
-% However, to avoid breaking the distribution, the sample rate varies 
-% across different dataset. As a result, it is challengin the decide the 
+% \textbf{Extract the distribution feature from a dataset.} Currently, we
+% simply extract the distribution by uniformly sampling the dataset.
+% However, to avoid breaking the distribution, the sample rate varies
+% across different dataset. As a result, it is challengin the decide the
 % sample rate.
 
 \subsection{相似度计算}
-我们对数据分布的采样数据可以看作是一种序列数据，这一类数据在机器学习研究中被广泛地研究，存在着一系列针对此类数据的机器学习模型[]。
+我们对数据分布的采样数据可以看作是一种序列数据，这一类数据在机器学习研究中被广泛地研究，存在着一系列针对此类数据的{\model}[]。
 我们相信进一步利用机器学习可以更好地获得相似度度量值。
 
 % \textbf{Compute the similarity.}
@@ -253,9 +253,9 @@ XXX
 模型缓存中可以存在巨量数据，因此从中寻找相似的条目可能成为一件非常带家巨大的任务。
 针对这一问题，我们计划在将来的工作中使用类似[]的方法滤最可能相似的条目，进而再进行精准地相似度匹配工作。
 
-% \textbf{Efficiently find the similar distribution in Model Cache.} There can be 
-% throusands to millions entires in the Model Cache. As a result, 
-% finding the entry with most similar distribution is considerably 
+% \textbf{Efficiently find the similar distribution in Model Cache.} There can be
+% throusands to millions entires in the Model Cache. As a result,
+% finding the entry with most similar distribution is considerably
 % cost. To solve this issue, we plan to use methods like
 % \cite{metwally2005efficient, ilyas2008survey} to first filter out the most relevant
 % entries before the comparison.

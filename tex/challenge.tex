@@ -25,7 +25,7 @@
 比如对于电子商务应用，最新添加的数据，如商品信息、用户订单等，往往是最常被访问的，相反，
 老数据很少被访问。
 
-XXX
+XXX：例子（TPCC）
 
 \subsection{动态访问模式与学习索引结构的性能}
 
@@ -35,11 +35,11 @@ XXX
 偏向性访问将大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
 这里使用地数据集为Open Street Map[]（OSM）的经度数据集。
 
-% \textbf{First, the query performance is sensitive to the 
-% runtime query distribution.} We build two types of 
-% workload, uniform and skewed. The uniform workload evenly 
-% read every key in random order. Skewed workloads all have 95\% queries 
-% reading 5\% hotkeys and hotkeys reside in different ranges. The dataset 
+% \textbf{First, the query performance is sensitive to the
+% runtime query distribution.} We build two types of
+% workload, uniform and skewed. The uniform workload evenly
+% read every key in random order. Skewed workloads all have 95\% queries
+% reading 5\% hotkeys and hotkeys reside in different ranges. The dataset
 % is the same as \Cref{sec:the-good}.
 
 \begin{table}[!hpb]
@@ -62,27 +62,27 @@ XXX
 
 根据表\ref{tab:pattern}，在不同访问模式下面，{\li}的性能变化较为剧烈，甚至有时会比B树还差。
 比如，在第一个偏向性工作负载下，{\li}的性能和B树相近，但在第三个偏向性工作负载下，{\li}的性能比B树慢45.2\%。
-这是因为查询的性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级模型的误差决定的。
-同时，不同的模型会有不一样的误差值。
-表\ref{tab:pattern}的最后一行给出了最常被访问模型的平均误差值。
-在我们的例子里，对于偏向性工作负载，这个平均值是5\%热键对应的模型的误差，对于均匀工作负载，这是所有模型的平均误差。
-最常被访问模型的平均误差值在第一个偏向性工作负载和第三个偏向性工作负载下远高于其他例子。
+这是因为查询的性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级{\model}的误差决定的。
+同时，不同的{\model}会有不一样的误差值。
+表\ref{tab:pattern}的最后一行给出了最常被访问{\model}的平均误差值。
+在我们的例子里，对于偏向性工作负载，这个平均值是5\%热键对应的{\model}的误差，对于均匀工作负载，这是所有{\model}的平均误差。
+最常被访问{\model}的平均误差值在第一个偏向性工作负载和第三个偏向性工作负载下远高于其他例子。
 因此，{\li}的性能甚至比B树还要糟糕。
 
-% \Cref{tab:skewdata} shows that the \li is not always better 
-% than \bt when varying the query distribution. For 
+% \Cref{tab:skewdata} shows that the \li is not always better
+% than \bt when varying the query distribution. For
 % example, under the 1st skewed workload, \li's performance is similar to \stx,
 % and under the 3rd skewed workloads, \li is 45.2\% slower than \stx.
-% This is because each query's 
-% performance is dominated by the error bound of the 2nd stage model 
-% which predicts the position of target key; 
-% meanwhile, each model may have different error bound. 
-% The last row of \Cref{tab:skewdata} gives the 
-% average error bound of the frequently accessed models. 
-% Specifically, for the skewed workload, it is the average error bound of the 
+% This is because each query's
+% performance is dominated by the error bound of the 2nd stage model
+% which predicts the position of target key;
+% meanwhile, each model may have different error bound.
+% The last row of \Cref{tab:skewdata} gives the
+% average error bound of the frequently accessed models.
+% Specifically, for the skewed workload, it is the average error bound of the
 % models predicting for 5\% hotkeys, and for uniform workload, it is the average error bound of
-% all models. The error bound of 
-% frequently accessed models in 1st and 3rd workloads is much 
+% all models. The error bound of
+% frequently accessed models in 1st and 3rd workloads is much
 % higer than the others. As a result, \li's performance can be
 % even worse than \stx.
 
@@ -96,23 +96,23 @@ XXX
 
 {\cdf}的变化
 
-XXX
+XXX：
 
 \subsection{动态数据分布与最优{\li}架构}
 
 寻找最优{\li}架构代价非常昂贵，往往需要大量的时间与计算资源才能决定最好的{\li}架构。
 比如说，使用简单的搜索技术，如网格搜索搜索[]（grid search），往往需要10到100倍的训练时间。
-{\li}的多级架构使这一任务更加困难，因为不同的级可以有不一样的模型类型和不同的模型数量，这些特性会指数级地增加架构搜索空间，
+{\li}的多级架构使这一任务更加困难，因为不同的级可以有不一样的{\model}类型和不同的{\model}数量，这些特性会指数级地增加架构搜索空间，
 从而影响寻找最优{\li}架构成为非常昂贵的一项任务。
 
-% \textbf{Second, it is costly to find the best model architecture.} It is usually expensive to decide the 
-% learning model's architecture. For example, 
-% it can take up to 10-100X of the model training time 
+% \textbf{Second, it is costly to find the best model architecture.} It is usually expensive to decide the
+% learning model's architecture. For example,
+% it can take up to 10-100X of the model training time
 % with basic search techniques such as grid search
-% \cite{becsey1968nonlinear, lavalle2004relationship, 
-% bergstra2011algorithms}. \li's stage-based design makes 
-% this task even harder, as a different stage 
-% can have a different type of models, which exponentially  
+% \cite{becsey1968nonlinear, lavalle2004relationship,
+% bergstra2011algorithms}. \li's stage-based design makes
+% this task even harder, as a different stage
+% can have a different type of models, which exponentially
 % increases the architecture search space.
 
 % \input{distdata}
@@ -135,54 +135,54 @@ XXX
   \end{tabular}
 \end{table}
 
-为了减少搜索空间，一个直观的启发式规则是``如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的模型，比如神经网络''。
+为了减少搜索空间，一个直观的启发式规则是``如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的{\model}，比如神经网络''。
 不幸的是，这一启发式规则并不能够其效果。
-我们配置了四个不同分布的数据集，将{\li}架构限定为只有两级且第二级固定为1万个{\lr}，并尝试用以上的启发式规则其决定第一级的模型类型。
+我们配置了四个不同分布的数据集，将{\li}架构限定为只有两级且第二级固定为1万个{\lr}，并尝试用以上的启发式规则其决定第一级的{\model}类型。
 在表\ref{tab:dist}中，当在第一级使用{\lr}时，它的损失函数{------}均方误差（mean square error）从第一个数据集（D1）到最后一个数据集（D4）不断增加。
 这说明第一个数据集被{\lr}更好地拟合了，相比其他数据集。
 同时，通过改变隐藏层（hidden layer）个数以及每个隐藏层的神经元（neuron）个数，我们尝试了不同{\nn}配置并选取了最优的{\nn}配置。
-根据以上启发式规则，对于以上四个数据集，将第一级模型替换成{\nn}将会表现出越来越大的相对使用{\lr}的{\li}配置的性能提升。
+根据以上启发式规则，对于以上四个数据集，将第一级{\model}替换成{\nn}将会表现出越来越大的相对使用{\lr}的{\li}配置的性能提升。
 然而{\nn}仅仅在第二个数据集（D2）和第三个数据集（D3）上提升了性能。
 这一现象之后有两个原因。
 首先，{\nn}的计算代价远高于{\lr}{------}{\nn}需要80 ns而{\lr}仅需要16 ns。
-其次，尽管较高的损失函数值表示第一级的{\lr}的拟合结果不够精确，但这并不能够说明第二级的模型不能够很好地拟合数据。
-因此，当在第一级使用{\lr}时，模型的平均误差值只比第一级使用{\nn}的架构稍微大一些。
+其次，尽管较高的损失函数值表示第一级的{\lr}的拟合结果不够精确，但这并不能够说明第二级的{\model}不能够很好地拟合数据。
+因此，当在第一级使用{\lr}时，{\model}的平均误差值只比第一级使用{\nn}的架构稍微大一些。
 因此，对于第四个数据集，最终具有更好性能的架构是使用{\lr}的架构。
 
-% To reduce the search space, an intuitive heuristic 
+% To reduce the search space, an intuitive heuristic
 % is ``if a distribution can not be fitted well with LR model,
 % then we should use a complex model, like a
-% neural netwrork (NN)''. Unfortunately, this heuristic 
-% does not work. We configure four datasets with different 
+% neural netwrork (NN)''. Unfortunately, this heuristic
+% does not work. We configure four datasets with different
 % distributions, fix the second stage to have 10k LR models
-% and try to use this heuristic to decide the 
-% first stage model type. \Cref{tab:distdata} shows that, 
-% when using LR as the first stage model, its loss (mean square 
+% and try to use this heuristic to decide the
+% first stage model type. \Cref{tab:distdata} shows that,
+% when using LR as the first stage model, its loss (mean square
 % error) increases from the 1st dataset (D1) to the last (D4).
-% This means that D1 is much better fitted with LR 
+% This means that D1 is much better fitted with LR
 % than the others.
-% Besides, we try 
+% Besides, we try
 % different NN configurations with vary number of neural
-% and depth and use the best. 
-% With the above heuristic, we should 
-% replace LR with NN of D2$\sim$D4. However, NN can only help to 
-% improve the performance for D2 and D3. There are two 
-% reasons make LR be better than NN for D4. First, NN's 
-% computation cost is much higher than LR ($\sim$80ns vs. 16ns); 
+% and depth and use the best.
+% With the above heuristic, we should
+% replace LR with NN of D2$\sim$D4. However, NN can only help to
+% improve the performance for D2 and D3. There are two
+% reasons make LR be better than NN for D4. First, NN's
+% computation cost is much higher than LR ($\sim$80ns vs. 16ns);
 % Second, even if the high loss value shows LR's fitting
-% result is less accurate, but it does not indicate that the second 
+% result is less accurate, but it does not indicate that the second
 % stage models cannot fit the data well.
-% As a result, when using LR as the first 
-% stage, the average error bound is only slightly worse than using 
-% NN. Thus, for D4, LR is the model should be used in 
-% the first stage. 
+% As a result, when using LR as the first
+% stage, the average error bound is only slightly worse than using
+% NN. Thus, for D4, LR is the model should be used in
+% the first stage.
 
 出了这个启发式规则外，我们也尝试了目前最佳的优化方法{------}贝叶斯超参数优化（bayesian hyperparameter optimization）{------}来寻找最优的{\li}架构成为非常昂贵的一项任务。
 尽管将级数限定为2，我们仍需要21分钟来找到最优的架构。
 
-% Besides this heuristic, we also try to use 
-% some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to 
-% automatically search the best architecture. Even we 
+% Besides this heuristic, we also try to use
+% some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to
+% automatically search the best architecture. Even we
 % constraint the stage number to be no larger than 2,
-% it still takes about 21 minutes to find the 
+% it still takes about 21 minutes to find the
 % best architecture.
