@@ -292,6 +292,7 @@ XXX
 其中有序索引与无序索引使用相同的架构设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
 
 \subsection{{\rmi}}
+\label{sec:rmi}
 
 直接使用{\lr}、{\nn}或者其他{\model}来学习数据分布的位置充满挑战，因为使用一个{\model}将从数百万条数据的量级将误差降低到几百的水平是非常困难的。
 但同时，使用一个{\model}将从数百万条数据的量级将误差降低到几万的水平，比如使用{\model}来代替B树最根部的两层，却很容易做到。
@@ -389,6 +390,7 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 % This not only reduces the number of instructions to manage the structure, but also allows representing the entire index as a sparse matrix-multiplication for a TPU/GPU.
 
 \subsection{{\rmi}训练与推断}
+\label{sec:rmi-train-inference}
 
 \begin{algorithm}
 % \begin{algorithm}[H] % 强制定位
@@ -498,7 +500,7 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 这两个变量将在递归的推断过程中被使用并改变。
 第\ref{rmi-inference:line:begin}行到第\ref{rmi-inference:line:end}行展示了这一递归推断过程。
 在每一级中，算法只使用一个{\model}进行预测，并根据该{\model}的预测结果更新下一级使用的{\model}的编号。
-在进入这一递归过程之前，算法指定第一级使用的{\model}编号为1，因为第一级仅包含这一个模型，从而保证{\rmi}的推断具有一个共同的开始点。
+在进入这一递归过程之前，算法指定第一级使用的{\model}编号为1，因为第一级仅包含这一个{\model}，从而保证{\rmi}的推断具有一个共同的开始点。
 经过最后一级的{\model}预测之后，数据位置的预测值与最后一级所使用的{\model}编号已经分别保存在变量$pred$和$p$中。
 这时，预测结果与对应的{\model}的最大误差、最小误差，即$models[M][p].max\_err$、$models[M][p].min\_err$，一并返回给用户，
 如第\ref{rmi-inference:line:return}行所示。
@@ -561,3 +563,5 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % An alternative approach to building existence indexes is to learn a hash function with the goal to maximize collisions among keys and among non-keys while minimizing collisions of keys and non-keys.
 % Interestingly, we can use the same probabilistic classification model as before to achieve that.
 % That is, we can create a hash function d, which maps f to a bit array of size m by scaling its output as d = f (x) ∗ m As such, we can use d as a hash function just like any other in a Bloom filter.
+
+本文主要探讨{\li}的范围索引结构，在接下来的篇幅中，我们将混合地使用{\li}与{\rmi}这两个属于来指代{\li}的范围索引结构。 

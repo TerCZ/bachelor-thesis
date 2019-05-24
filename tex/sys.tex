@@ -48,7 +48,7 @@ XXX
 在表\ref{tab:pattern-int-sol}中，我们可以看到使用了新的训练集，最佳的{\li}架构是在第一层使用隐藏层宽度为16、隐藏层个数为1的神经网络的{\li}架构，
 其平均搜索时间为275 ns，和{\li}的性能（282 ns）非常接近。
 这是因为，这种直观的方法并不能优化{\model}的最大误差和最小误差，而这才是决定{\li}性能的关键因素。
-我们可以看到，处理频繁访问的键的{\model}的平均误差并没有较好的提升。
+我们可以看到，处理{\hotkey}的{\model}的平均误差并没有较好的提升。
 
 % To incorporate read access pattern, an intuitive solution is to increase the
 % contribution of frequently accessed keys during the training process.
@@ -67,11 +67,11 @@ XXX
 % which decide the search time. In the above evaluation, the
 % average error bound does not improve much (5.21 vs. 5.31).
 
-与其优化热键的预测误差，我们应该关注处理频繁访问的键的{\model}。
-因为被分配键数量较少的{\model}往往会拥有较小的误差范围，我们尝试使用数据拉伸的方法来减少处理频繁访问的键的{\model}所被分配的键的数量。
+与其优化热键的预测误差，我们应该关注处理{\hotkey}的{\model}。
+因为被分配键数量较少的{\model}往往会拥有较小的误差范围，我们尝试使用数据拉伸的方法来减少处理{\hotkey}的{\model}所被分配的键的数量。
 如果一个键被频繁地访问，我们将增大其在训练集中与其他键的距离，即改变键所对应的数据位置的值，并用新的训练集来训练除了最后级之外的{\model}。
-因为中间级的{\model}会依据被拉伸后的训练集进行分配数据，因此最终在最后级分配的数据将会达到对于处理频繁访问的键的{\model}仅被分配少量数据的效果，
-从而优化了最终频繁访问的键的查询性能。
+因为中间级的{\model}会依据被拉伸后的训练集进行分配数据，因此最终在最后级分配的数据将会达到对于处理{\hotkey}的{\model}仅被分配少量数据的效果，
+从而优化了最终{\hotkey}的查询性能。
 
 % \begin{figure}
 %     \begin{center}
@@ -108,7 +108,7 @@ XXX
 对于上文提到的例子，原训练集为$\{<a, 0>, <b, 1>, <c, 2>, <d, 3>\}$且这三个键的访问频率是$1:2:2:1$，
 则在数据拉伸后的训练集为$\{<a, 0>, <b, 0.7>, <c, 2>, , <d, 3.3>\}$。
 图\ref{fig:stretch}直观地展示了针对第一个数据集（D1）在数据拉伸前后的训练集。
-我们可以明显地看到，数据拉伸很好地将热点键在训练数据中分散开，从而使用新的训练集训练中间级{\model}进行数据分配能够很好地减少处理频繁访问的键的{\model}所被分配的键的数量。
+我们可以明显地看到，数据拉伸很好地将热点键在训练数据中分散开，从而使用新的训练集训练中间级{\model}进行数据分配能够很好地减少处理{\hotkey}的{\model}所被分配的键的数量。
 
 % Specifically, given a key with position $p$ before ``stretching'', if its access frequency is $f$, and the dataset size is $N$
 % then we need to shift its position to be $p + (n-1)/2$, and shift

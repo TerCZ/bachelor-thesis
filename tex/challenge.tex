@@ -15,10 +15,10 @@
 本节将探索并分析{\li}在动态场景下所面临的挑战。
 
 \section{动态数据分布带来的挑战}
+\label{sec:dist-challenge}
 
-在真实情景下，伴随着写操作的执行，索引数据是频繁变化的，随着而来
-而{\li}的设计与测试中均为考虑静态的数据分布下的性能表现。
-本小节将探讨{\li}在静态的数据分布下的性能表现，并针对{\li}在静态的数据分布下的所遇到的性能问题进行研究分析。
+在真实情景下，伴随着写操作的执行，索引数据是频繁变化的，从而导致数据分布的动态变化，而{\li}的设计与测试中均为考虑静态的数据分布下的性能表现。
+本小节将探动态数据分布、动态数据分布下{\li}的性能表现，并研究分析{\li}在动态数据分布下的所遇到性能问题的成因。
 
 \subsection{动态数据分布}
 
@@ -104,8 +104,8 @@
 
 \section{访问模式带来的挑战}
 
-真实情景中数据访问往往不是均匀分布的，而是展现出动态的访问模式，而{\li}的设计与测试中均为考虑动态的访问模式下的性能表现。
-本小节将探讨何为访问模式、访问模式下{\li}的性能表现，并研究分析如何解决{\li}在动态的访问模式下的所遇到的性能问题。
+真实情景中数据访问往往不是均匀分布的，而是展现出不同的访问模式，而{\li}的设计与测试中均为考虑在不同的访问模式下的性能表现。
+本小节将探讨何为访问模式、访问模式下{\li}的性能表现，并研究分析{\li}在变化各异的访问模式下的所遇到性能问题的成因。
 
 \subsection{访问模式}
 
@@ -166,7 +166,7 @@
 % This transaction is the backbone of the workload.
 % It is designed to place a variable load on the system to reflect on-line database activity as typically found in production environments.
 
-\subsubsection{访问模式与现有索引结构}
+\subsubsection{访问模式对索引结构性能的影响}
 
 对于大部分的索引结构，访问模式中的访问局部性特性均会对其性能产生不同程度的影响。
 对于这些索引结构，具有较差的访问局部性或者不具有任何访问局部性，即纯粹的乱序访问，将展现出索引结构的平均性能，
@@ -174,16 +174,16 @@
 而当访问模式中具有较明显的访问局部性的时候时，往往能够利用计算机现有体系结构中的内存层级（memory hierarchy）的缓存机制获得一定的性能提升。
 对于内存使用越少的索引结构，访问模式中较明显的访问局部性对索引性能的提升会更加明显。
 但另一方面，如果不同的搜索键之间在索引结构中的性能有差异，比如说字典树及其变种的索引结构的索引操作性能与搜索键长度具有较强的关联性，
-访问模式中较明显的访问局部性有可能反而会影响索引结构的操作性能，因为如果被频繁访问的的搜索键恰好是性能较差的那一部分搜索键。
+访问模式中较明显的访问局部性有可能反而会影响索引结构的操作性能，因为如果{\hotkey}恰好是性能较差的那一部分搜索键。
 
 针对访问模式中潜在的访问局部性，相关索引结构研究就这一特点进行开发利用。
-Huanchen等人提出混合索引\cite{zhang2016reducing}（Hybrid Index），针对具有访问偏向性的动态场景进行优化。
+Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏向性的动态场景进行优化。
 混合索引通过冷热数据分离的方法。
-第一级使用空间使用较少的、更新较灵活的热存储（Hot Store）来处理写操作，这一部分的索引结构的尺寸较小以快速地响应读与写请求。
-第二级用较为紧凑且只读的冷存储（Cold Store）来存储大量的索引条目，这一部分的索引结构是针对读操作进行优化的，因为不需要支持实时更新操作，
+第一级使用空间使用较少的、更新较灵活的热存储来处理写操作，这一部分的索引结构的尺寸较小以快速地响应读与写请求。
+第二级用较为紧凑且只读的冷存储来存储大量的索引条目，这一部分的索引结构是针对读操作进行优化的，因为不需要支持实时更新操作，
 所以许多针对写操作的设计可以被避免，从而获得较为紧凑的结构设计。
 混合索引间接性地将第一级的索引条目从第一级迁移到第二级。
-这样的混合索引结构在较明显的访问局部性的访问模式下，能够有效地提供较好的空间利用率和高性能表现。
+这样的混合索引结构在{\skewacc}下，能够有效地提供较好的空间利用率和高性能表现。
 
 % The ﬁrst stage ingests all incoming entries and is kept small for fast read and write operations.
 % The index periodically migrates entries from the ﬁrst stage to the second, which uses a more compact, read-optimized data structure.
@@ -192,23 +192,71 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}（Hybrid Index），针
 % Our third contribution is applying DST to four popular order-preserving index structures and evaluating them in both standalone microbenchmarks and a full in-memory DBMS using several transaction processing workloads.
 % Our results show that hybrid indexes provide comparable throughput to the original ones while reducing the memory overhead by up to 70%.
 
-\subsection{访问模式对{\li}的性能影响}
+\subsection{访问模式对{\li}性能的影响}
 
-{\li}未考虑访问模式
+尽管访问模式，特别是访问模式中潜在的访问局部性对索引结构的性能有着较大的影响，然而{\li}在设计中并未对这一问题有充分的考虑。
+如在第\ref{sec:rmi}节与第\ref{sec:rmi-train-inference}节所描述，根据算法\ref{algo:rmi-train}，目前{\rmi}的训练过程中，
+所有的{\model}学习的均为从搜索键到数据位置的映射函数，即{\cdf}本身，并且在中间级的{\model}进行数据分配时也是按照学习的{\cdf}近似函数进行数据分配。
+这一训练与推断算法背后的隐含信息即是中间级{\model}应该尽可能的进行均匀的数据分布，因为如果中间级{\model}能够完美地拟合{\cdf}，它们的的分配方法则会完美地根据{\cdf}进行数据的分配，
+从而保证每个下级{\model}所获的数据在{\cdf}值域拥有相同的范围，即每个{\model}具有相同的数据量。
 
-{\li}性能对实时访问模式非常敏感。
+然而这一{\rmi}训练与推断算法的设计是缺乏理论依据的，也是完全没有考虑动态场景中各种可能的访问模式对{\li}性能的影响的。
+首先，将数据进行均分这一设计思想本身是缺乏理论依据的。
+事实上，这一设计是根据现实观察而决定的{------}从实验的结果看，当一个{\model}所负责的数据量足够小时，{\model}的精确度将会更好。
+然而，这一观察并不能直接导出均匀地进行数据分散这一设计。
+事实上，对于{\skewacc}，按照这一实验结果，更优的方案应该是将{\hotkey}用更多的{\model}进行索引，从而达到减少{\hotkey}的对应{\model}所处理的数据量，进而提高对{\hotkey}的索引性能。
 
-我们构建了2种工作负载{------}均匀访问与偏向性访问。
-均匀访问均匀随机地读取所有的键。
-偏向性访问将大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
-这里使用地数据集为Open Street Map[]（OSM）的经度数据集。
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {{\rmi}中数据分配均匀程度示意图}
+    {English caption}
+  \label{fig:rmi-dispatch}
+\end{figure}
 
-什么是OSM，怎么取的
+事实上，{\li}性能对实时访问模式非常敏感。
+一方面，正如上文所提到，{\rmi}的训练与推断所用到的均匀分配策略并不是最优的分配策略，会导致在{\skewacc}下呈现出次优（suboptimal）的性能表现。
+另一方面，因为{\rmi}所拟合的{\cdf}结果是具有一定误差的，根据拟合出来的{\cdf}进行数据分配并不能够真正做到均匀的数据分配。
+为展示这一效应，我们对{\rmi}在对数正态分布（log-normal distribution）的数据集下的数据分配情况进行了探究。
+我们使用与原论文相同的{\rmi}架构，即两级{\rmi}，每一级均使用{\lr}对数据进行拟合，且第二级包含1万个{\model}。
+如图\ref{fig:rmi-dispatch}所示，在对数正态分布下，{\model}所分配的数据量并非维持在期望的平均数据量水平，而是具有较大的差异的。
+造成这一现象的原因是{\model}对真实{\cdf}拟合所产生的误差，这是{\model}的自然特性之一{------}尽管{\model}在空间与执行时间上可以有较好的性能，但{\model}无法保证其拟合（预测）结果的正确性。
+因此{\rmi}的性能在{\skewacc}下可能有较大的性能差异。
 
-% \textbf{First, the query performance is sensitive to the runtime query distribution.} We build two types of workload, uniform and skewed.
+% \textbf{First, the query performance is sensitive to the runtime query distribution.}
+
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {{\osm}的{\cdf}}
+    {English caption}
+  \label{fig:osm-cdf}
+\end{figure}
+
+为了探究访问模式对{\li}性能的影响，我们构建了2种工作负载{------}{\uniwl}和{\skewwl}。
+其中，{\uniwl}均匀随机地读取所有的搜索键，{\skewwl}则大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
+根据上文分析，不同的{\skewacc}对{\rmi}有不同的性能影响，而且完全取决于{\model}在训练过程中的误差，因此我们设计了多组{\skewwl}来模拟不同的{\skewacc}。
+我们使用OpenStreetMap[]（OSM）的经度数据集作为测试数据集。
+OpenStreetMap是一项旨在创建一个可自由编辑的世界地图的协作项目，它最重要的产出不仅包括地图本身，而这围绕此项目产生的数据也是非常重要的产出。
+OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例。
+我们从OpenStreetMap中随机抽取了2亿条经度信息作为搜索键，构成{\osm}。
+图\ref{fig:osm-cdf}展示了{\osm}的{\cdf}。
+
+% We build two types of workload, uniform and skewed.
 % The uniform workload evenly read every key in random order.
 % Skewed workloads all have 95\% queries reading 5\% hotkeys and hotkeys reside in different ranges.
 % The dataset is the same as \Cref{sec:the-good}.
+
+% OpenStreetMap (OSM) is a collaborative project to create a free editable map of the world.
+% Rather than the map itself, the data generated by the project is considered its primary output.
+% The creation and growth of OSM has been motivated by restrictions on use or availability of map information across much of the world, and the advent of inexpensive portable satellite navigation devices.
+% [6] OSM is considered a prominent example of volunteered geographic information.
 
 \begin{table}[!hpb]
   \centering
@@ -229,14 +277,15 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}（Hybrid Index），针
 \end{table}
 
 根据表\ref{tab:pattern}，在不同访问模式下面，{\li}的性能变化较为剧烈，甚至有时会比B树还差。
-比如，在第一个偏向性工作负载下，{\li}的性能和B树相近，但在第三个偏向性工作负载下，{\li}的性能比B树慢45.2\%。
-
-这是因为查询的性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级{\model}的误差决定的。
-同时，不同的{\model}会有不一样的误差值。
+比如，在第一个{\skewwl}下，{\li}的性能和B树相近，但在第三个{\skewwl}下，{\li}的性能比B树慢45.2\%。
+根据上文分析，以上结果是符合预期的。
+{\li}性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级{\model}的误差决定的。
+同时，不同的{\model}会有不一样的误差值，因此不同的查询键会有不一样的查询性能。
+因为在{\rmi}的训练过程中，{\model}可能会分配极度不均匀的数据量，因此不同{\model}对应的误差值也会有极大的差异。
 表\ref{tab:pattern}的最后一行给出了最常被访问{\model}的平均误差值。
-在我们的例子里，对于偏向性工作负载，这个平均值是5\%热键对应的{\model}的误差，对于均匀工作负载，这是所有{\model}的平均误差。
-最常被访问{\model}的平均误差值在第一个偏向性工作负载和第三个偏向性工作负载下远高于其他例子。
-因此，{\li}的性能甚至比B树还要糟糕。
+在我们的例子里，对于{\skewwl}，这个平均值是5\%热键对应的{\model}的误差，对于均匀工作负载，这是所有{\model}的平均误差。
+最常被访问{\model}的平均误差值在第一个{\skewwl}和第三个{\skewwl}下远高于其他例子。
+综上所述，{\li}的性能在{\skewwl}甚至比B树还要糟糕。
 
 % \Cref{tab:skewdata} shows that the \li is not always better than \bt when varying the query distribution.
 % For example, under the 1st skewed workload, \li's performance is similar to \stx, and under the 3rd skewed workloads, \li is 45.2\% slower than \stx.
@@ -246,18 +295,20 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}（Hybrid Index），针
 % The error bound of frequently accessed models in 1st and 3rd workloads is much higer than the others.
 % As a result, \li's performance can be even worse than \stx.
 
-{\li}的模型误差变化特别大
-
-{\li}的模型头尾误差特别大
-
-\subsection{动态访问模式对{\li}的性能影响}
+\subsection{动态访问模式对{\li}性能的影响}
 
 静态访问模式指的是一种访问模式不随时间变化而变化或随时间变化而变化非常小的一种访问模式变化趋势，
-而访问模式指的是一种访问模式随时间变化而变化的一种访问模式变化趋势，
-显然，对于静态访问模式，计算机系统能够更简单轻松地规划、管理
+而动态访问模式指的是一种访问模式随时间变化而变化的一种访问模式变化趋势。
+显然，对于静态访问模式，计算机系统能够更简单轻松地规划、管理，相对动态访问模式。
+然而不幸的是，在现实情况下很难找到能够被认为是静态的应用，它们的访问模式往往是动态变化的。
+对于一个系统或者一个解决方案而言，真正重要的问题是，应用行为，包括访问模式在内，有多么动态。
 
 % The access patterns of user requests may be static, so that they do not change over time, or dynamic.
 % It is obviously considerably easier to plan for and manage the static environments than would be the case for dynamic distributed systems.
 % Unfortunately, it is difficult to find many real-life distributed applications that would be classified as static.
 % The significant question, then, is not whether a system is static or dynamic, but how dynamic it is.
 % Incidentally, it is along this dimension that the relationship between the distributed database design and query processing is established.
+
+然而，类似第\ref{sec:dist-challenge}节讨论的，{\li}的设计并没有考虑动态的访问模式。
+事实上，{\li}目前是一种``一次构建不再改变''的索引结构。
+因此当面对真实应用中随处可见的动态访问模式，{\li}的性能将会更加的波动剧烈且不可预测，{\li}的应用前景再一次收到严重挑战。
