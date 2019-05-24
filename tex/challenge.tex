@@ -131,10 +131,6 @@
 综上所示，在本节的讨论中，我们仅考虑索引结构对键查找的访问模式所带来的挑战。
 具体的，我们关注搜索键的访问局部性{------}在较短时间内对同一范围的搜索键是否有重复地进行访问（读取与/或写入）的特征。
 
-\todo{访问模式对索引的影响}
-
-\todo{现有索引是怎么处理访问模式的}
-
 \subsubsection{真实场景中的访问模式}
 
 访问模式广泛地存在于真实的应用场景中。
@@ -169,6 +165,32 @@
 % It represents a mid-weight, read-write transaction with a high frequency of execution and stringent response time requirements to satisfy on-line users.
 % This transaction is the backbone of the workload.
 % It is designed to place a variable load on the system to reflect on-line database activity as typically found in production environments.
+
+\subsubsection{访问模式与现有索引结构}
+
+对于大部分的索引结构，访问模式中的访问局部性特性均会对其性能产生不同程度的影响。
+对于这些索引结构，具有较差的访问局部性或者不具有任何访问局部性，即纯粹的乱序访问，将展现出索引结构的平均性能，
+因为不同的搜索键以接近随机的模式进行访问。
+而当访问模式中具有较明显的访问局部性的时候时，往往能够利用计算机现有体系结构中的内存层级（memory hierarchy）的缓存机制获得一定的性能提升。
+对于内存使用越少的索引结构，访问模式中较明显的访问局部性对索引性能的提升会更加明显。
+但另一方面，如果不同的搜索键之间在索引结构中的性能有差异，比如说字典树及其变种的索引结构的索引操作性能与搜索键长度具有较强的关联性，
+访问模式中较明显的访问局部性有可能反而会影响索引结构的操作性能，因为如果被频繁访问的的搜索键恰好是性能较差的那一部分搜索键。
+
+针对访问模式中潜在的访问局部性，相关索引结构研究就这一特点进行开发利用。
+Huanchen等人提出混合索引\cite{zhang2016reducing}（Hybrid Index），针对具有访问偏向性的动态场景进行优化。
+混合索引通过冷热数据分离的方法。
+第一级使用空间使用较少的、更新较灵活的热存储（Hot Store）来处理写操作，这一部分的索引结构的尺寸较小以快速地响应读与写请求。
+第二级用较为紧凑且只读的冷存储（Cold Store）来存储大量的索引条目，这一部分的索引结构是针对读操作进行优化的，因为不需要支持实时更新操作，
+所以许多针对写操作的设计可以被避免，从而获得较为紧凑的结构设计。
+混合索引间接性地将第一级的索引条目从第一级迁移到第二级。
+这样的混合索引结构在较明显的访问局部性的访问模式下，能够有效地提供较好的空间利用率和高性能表现。
+
+% The ﬁrst stage ingests all incoming entries and is kept small for fast read and write operations.
+% The index periodically migrates entries from the ﬁrst stage to the second, which uses a more compact, read-optimized data structure.
+% Our ﬁrst contribution is hybrid index, a dual-stage index architecture that achieves both space efﬁciency and high performance.
+% Our second contribution is Dual-Stage Transformation (DST), a set of guidelines for converting any order-preserving index structure into a hybrid index.
+% Our third contribution is applying DST to four popular order-preserving index structures and evaluating them in both standalone microbenchmarks and a full in-memory DBMS using several transaction processing workloads.
+% Our results show that hybrid indexes provide comparable throughput to the original ones while reducing the memory overhead by up to 70%.
 
 \subsection{访问模式对{\li}的性能影响}
 
