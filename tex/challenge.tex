@@ -1,90 +1,18 @@
 %\bibliographystyle{sjtu2}%[此处用于每章都生产参考文献]
-\chapter{动态场景下学习索引结构面临的挑战}
+\chapter{动态场景下{\li}面临的挑战}
 \label{chap:challenge}
 
 尽管{\li}相比传统索引结构具有低空间消耗和短查询时间的有点
-然而，{\li}假设工作场景是只读的，即被索引的数据是固定不变，因此不需要处理更新操作，并假设访问是均匀分布的，
-即所有数据被访问的概率是相同的。
+然而，{\li}假设工作场景是只读的，即被索引的数据是固定不变，因此不需要处理更新操作，{\li}只需要一次构建即可长期使用，并假设访问是均匀分布的，
+即所有数据被访问的概率是相同的，因此{\li}算法以优化所有键的访问平均时间为目标。
+
 这样的假设极大地限制了{\li}地应用范围。
-在真实情景下，伴随着写操作的执行，索引数据是频繁变化的。
-同时，真实情景下数据访问是具有偏向性的，
-即数据存在冷热之分，大量数据访问发生在少量的热点数据上。
+在真实情景下，伴随着写操作的执行，索引数据是频繁变化的，因此{\li}构建后面对持续变化的数据分布需要持续地进行架构调整以及训练来维持良好的{\li}性能。
+同时，真实情景下数据访问是具有偏向性的，即数据存在冷热之分，大量数据访问发生在少量的热点数据上，因此针对所有的键的平均访问时间进行优化是一种过度的优化目标，
+并且以此作为优化目标的算法给{\li}带来性能上的缺陷。
+
 面对广泛存在于真实应用里的动态场景，{\li}的现实应用存在许多挑战与机遇。
-
 本节将探索并分析{\li}在动态场景下所面临的挑战。
-
-\section{动态访问模式带来的挑战}
-
-真实情景中数据访问往往不是均匀分布的，而是展现出动态的访问模式。
-而{\li}的设计与测试中均为考虑动态的访问模式下的性能表现。
-本小节将探讨{\li}在动态的访问模式下的性能表现，并针对{\li}在动态的访问模式下的所遇到的性能问题进行研究分析。
-
-\subsection{动态访问模式}
-
-动态访问模式广泛地存在于真实的应用场景中，
-比如对于电子商务应用，最新添加的数据，如商品信息、用户订单等，往往是最常被访问的，相反，
-老数据很少被访问。
-
-XXX：例子（TPCC）
-
-\subsection{动态访问模式与学习索引结构的性能}
-
-{\li}性能对实时访问模式非常敏感。
-我们构建了2种工作负载{------}均匀访问与偏向性访问。
-均匀访问均匀随机地读取所有的键。
-偏向性访问将大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
-这里使用地数据集为Open Street Map[]（OSM）的经度数据集。
-
-% \textbf{First, the query performance is sensitive to the
-% runtime query distribution.} We build two types of
-% workload, uniform and skewed. The uniform workload evenly
-% read every key in random order. Skewed workloads all have 95\% queries
-% reading 5\% hotkeys and hotkeys reside in different ranges. The dataset
-% is the same as \Cref{sec:the-good}.
-
-\begin{table}[!hpb]
-  \centering
-  \bicaption[指向一个表格的表目录索引]
-    % {一个颇为标准的三线表格\footnotemark[1]}
-    {{\li}在不同访问模式下的性能表现}
-    {A Table}
-  \label{tab:pattern}
-  \begin{tabular}{@{}llr@{}} \toprule
-    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    % Animal & Description & Price (\$)\\ \midrule
-    % Gnat & per gram & 13.65 \\
-    % & each & 0.01 \\
-    % Gnu & stuffed & 92.50 \\
-    % Emu & stuffed & 33.33 \\
-    % Armadillo & frozen & 8.99 \\ \bottomrule
-  \end{tabular}
-\end{table}
-
-根据表\ref{tab:pattern}，在不同访问模式下面，{\li}的性能变化较为剧烈，甚至有时会比B树还差。
-比如，在第一个偏向性工作负载下，{\li}的性能和B树相近，但在第三个偏向性工作负载下，{\li}的性能比B树慢45.2\%。
-这是因为查询的性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级{\model}的误差决定的。
-同时，不同的{\model}会有不一样的误差值。
-表\ref{tab:pattern}的最后一行给出了最常被访问{\model}的平均误差值。
-在我们的例子里，对于偏向性工作负载，这个平均值是5\%热键对应的{\model}的误差，对于均匀工作负载，这是所有{\model}的平均误差。
-最常被访问{\model}的平均误差值在第一个偏向性工作负载和第三个偏向性工作负载下远高于其他例子。
-因此，{\li}的性能甚至比B树还要糟糕。
-
-% \Cref{tab:skewdata} shows that the \li is not always better
-% than \bt when varying the query distribution. For
-% example, under the 1st skewed workload, \li's performance is similar to \stx,
-% and under the 3rd skewed workloads, \li is 45.2\% slower than \stx.
-% This is because each query's
-% performance is dominated by the error bound of the 2nd stage model
-% which predicts the position of target key;
-% meanwhile, each model may have different error bound.
-% The last row of \Cref{tab:skewdata} gives the
-% average error bound of the frequently accessed models.
-% Specifically, for the skewed workload, it is the average error bound of the
-% models predicting for 5\% hotkeys, and for uniform workload, it is the average error bound of
-% all models. The error bound of
-% frequently accessed models in 1st and 3rd workloads is much
-% higer than the others. As a result, \li's performance can be
-% even worse than \stx.
 
 \section{动态数据分布带来的挑战}
 
@@ -94,27 +22,32 @@ XXX：例子（TPCC）
 
 \subsection{动态数据分布}
 
+什么是数据分布
+
+什么是动态数据分布
+
+为什么会有动态数据分布
+
+以某tpcc txn为例
+
+\subsection{动态数据分布对{\li}性能影响}
+
+{\li}未考虑xxx，动态数据分布对{\li}的影响
+
 {\cdf}的变化
 
-XXX：
+数据量的变化
 
-\subsection{动态数据分布与最优{\li}架构}
+\subsection{动态数据分布下搜索最优{\li}架构}
 
 寻找最优{\li}架构代价非常昂贵，往往需要大量的时间与计算资源才能决定最好的{\li}架构。
 比如说，使用简单的搜索技术，如网格搜索搜索[]（grid search），往往需要10到100倍的训练时间。
 {\li}的多级架构使这一任务更加困难，因为不同的级可以有不一样的{\model}类型和不同的{\model}数量，这些特性会指数级地增加架构搜索空间，
 从而影响寻找最优{\li}架构成为非常昂贵的一项任务。
 
-% \textbf{Second, it is costly to find the best model architecture.} It is usually expensive to decide the
-% learning model's architecture. For example,
-% it can take up to 10-100X of the model training time
-% with basic search techniques such as grid search
-% \cite{becsey1968nonlinear, lavalle2004relationship,
-% bergstra2011algorithms}. \li's stage-based design makes
-% this task even harder, as a different stage
-% can have a different type of models, which exponentially
-% increases the architecture search space.
-
+% \textbf{Second, it is costly to find the best model architecture.} It is usually expensive to decide the learning model's architecture.
+% For example, it can take up to 10-100X of the model training time with basic search techniques such as grid search \cite{becsey1968nonlinear, lavalle2004relationship, bergstra2011algorithms}.
+% \li's stage-based design makes this task even harder, as a different stage can have a different type of models, which exponentially increases the architecture search space.
 % \input{distdata}
 
 \begin{table}[!hpb]
@@ -149,40 +82,160 @@ XXX：
 因此，当在第一级使用{\lr}时，{\model}的平均误差值只比第一级使用{\nn}的架构稍微大一些。
 因此，对于第四个数据集，最终具有更好性能的架构是使用{\lr}的架构。
 
-% To reduce the search space, an intuitive heuristic
-% is ``if a distribution can not be fitted well with LR model,
-% then we should use a complex model, like a
-% neural netwrork (NN)''. Unfortunately, this heuristic
-% does not work. We configure four datasets with different
-% distributions, fix the second stage to have 10k LR models
-% and try to use this heuristic to decide the
-% first stage model type. \Cref{tab:distdata} shows that,
-% when using LR as the first stage model, its loss (mean square
-% error) increases from the 1st dataset (D1) to the last (D4).
-% This means that D1 is much better fitted with LR
-% than the others.
-% Besides, we try
-% different NN configurations with vary number of neural
-% and depth and use the best.
-% With the above heuristic, we should
-% replace LR with NN of D2$\sim$D4. However, NN can only help to
-% improve the performance for D2 and D3. There are two
-% reasons make LR be better than NN for D4. First, NN's
-% computation cost is much higher than LR ($\sim$80ns vs. 16ns);
-% Second, even if the high loss value shows LR's fitting
-% result is less accurate, but it does not indicate that the second
-% stage models cannot fit the data well.
-% As a result, when using LR as the first
-% stage, the average error bound is only slightly worse than using
-% NN. Thus, for D4, LR is the model should be used in
-% the first stage.
+% To reduce the search space, an intuitive heuristic is ``if a distribution can not be fitted well with LR model, then we should use a complex model, like a neural netwrork (NN)''.
+% Unfortunately, this heuristic does not work.
+% We configure four datasets with different distributions, fix the second stage to have 10k LR models and try to use this heuristic to decide the first stage model type.
+% \Cref{tab:distdata} shows that, when using LR as the first stage model, its loss (mean square error) increases from the 1st dataset (D1) to the last (D4).
+% This means that D1 is much better fitted with LR than the others.
+% Besides, we try different NN configurations with vary number of neural and depth and use the best.
+% With the above heuristic, we should replace LR with NN of D2$\sim$D4.
+% However, NN can only help to improve the performance for D2 and D3.
+% There are two reasons make LR be better than NN for D4.
+% First, NN's computation cost is much higher than LR ($\sim$80ns vs.
+% 16ns); Second, even if the high loss value shows LR's fitting result is less accurate, but it does not indicate that the second stage models cannot fit the data well.
+% As a result, when using LR as the first stage, the average error bound is only slightly worse than using NN.
+% Thus, for D4, LR is the model should be used in the first stage.
 
 出了这个启发式规则外，我们也尝试了目前最佳的优化方法{------}贝叶斯超参数优化（bayesian hyperparameter optimization）{------}来寻找最优的{\li}架构成为非常昂贵的一项任务。
 尽管将级数限定为2，我们仍需要21分钟来找到最优的架构。
 
-% Besides this heuristic, we also try to use
-% some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to
-% automatically search the best architecture. Even we
-% constraint the stage number to be no larger than 2,
-% it still takes about 21 minutes to find the
-% best architecture.
+% Besides this heuristic, we also try to use some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to automatically search the best architecture.
+% Even we constraint the stage number to be no larger than 2, it still takes about 21 minutes to find the best architecture.
+
+\section{访问模式带来的挑战}
+
+真实情景中数据访问往往不是均匀分布的，而是展现出动态的访问模式，而{\li}的设计与测试中均为考虑动态的访问模式下的性能表现。
+本小节将探讨何为访问模式、访问模式下{\li}的性能表现，并研究分析如何解决{\li}在动态的访问模式下的所遇到的性能问题。
+
+\subsection{访问模式}
+
+访问模式指的是一个系统或者程序对数据资源的读取或写入的模式。
+这些模式在访问的局部性（locality of reference）{------}在较短时间内对同一范围的数据资源重复地进行访问（读取与/或写入）{------}水平上具有不同的体现。
+有的访问模式具有较好的访问局部性，即在短时间内不断地读取或者写入同一范围的数据，而有的访问模式的访问局部性较差，即在该访问模式下大量的访问呈现出随机访问的特点，
+每次访问的数据资源时间与空间上不具有较强的关联性。
+前一种访问模式在各类计算机系统，包括文件系统、操作系统和数据库系统中较常出现，许多系统针对这一特点对在系统的设计与实现上进行了针对性的优化，从而提高系统的整体性能。
+而后一种访问模式往往能够将系统的最坏性能展现出来，因为在这类访问模式之下，类似缓存等机制是无法有效缓解系统受较差访问局部性带来的性能影响的。
+
+正如前文提到，访问模式对缓存机制的效用有较大影响，它还影响系统的并行与分布式计算的方式。
+对于特定的访问模式，若将计算任务根据数据量或计算量进行简单的切割，并分散到多核或多机系统上进行执行，数据访问模式带来的竞争问题会极大地影响这种并行与分布式计算的性能提升。
+由访问模式带来的在并行与分布式计算下的竞争问题中，最显而易见的就是因为一致性需求而导致的锁资源竞争，当大量的核或机器因为无法获取被竞争的锁时，系统将进入闲置状态，尽管仍然存在大量计算任务需要完成。
+
+% In computing, a memory access pattern or IO access pattern is the pattern with which a system or program reads and writes memory on secondary storage.
+% These patterns differ in the level of locality of reference and drastically affect cache performance,[1] and also have implications for the approach to parallelism[2][3] and distribution of workload in shared memory systems.
+% [4] Further, cache coherency issues can affect multiprocessor performance,[5] which means that certain memory access patterns place a ceiling on parallelism (which manycore approaches seek to break[6]).
+
+在数据库系统中，访问模式既包括对数据条目的访问模式，如是否存在在较短时间内的被频繁访问的数据条目或数据条目范围，也包括事务（transaction）执行的访问模式，
+如是否存在在较短时间内的被频繁执行的事务以及事务是否以特定模式对数据条目进行操作。
+这些访问最终都会涉及到对索引结构的访问，并转化成使用索引结构对键查找的访问模式。
+
+综上所示，在本节的讨论中，我们仅考虑索引结构对键查找的访问模式所带来的挑战。
+具体的，我们关注搜索键的访问局部性{------}在较短时间内对同一范围的搜索键是否有重复地进行访问（读取与/或写入）的特征。
+
+\todo{访问模式对索引的影响}
+
+\todo{现有索引是怎么处理访问模式的}
+
+\subsubsection{真实场景中的访问模式}
+
+访问模式广泛地存在于真实的应用场景中。
+比如对于电子商务应用，最新添加的数据，如商品信息、用户订单等，往往是最常被访问的，相反，
+老数据很少被访问，比如多年前发生的交易信息等。
+
+{\tpcc}是一个用于测试事务处理系统性能与性价比的一个基准测试程序，被广泛地用来测试与评估商业数据库系统与数据库系统学术原型。
+{\tpcc}是一个根据实际生产环境应用和环境而建模的在线事务处理（on-line transaction processing，OLTP）的基准测试程序。
+作为一个在线事务处理基准测试程序，{\tpcc}模拟一个由终端操作员对于数据库执行交易的完整环境。
+这个基准测试程序的中心是一个在订单输入的环境里的重要操作。
+这些事务包括输入订单、运输订单、记录付款操作、检查订单状态以及统计仓库库存状态。
+
+% The Transaction Processing Performance Council (TPC) is about to approve the third in its series of benchmarks which measure the performance and price/performance of transaction processing systems.
+% Like TPC-A, the TPC's first benchmark, the new TPC Benchmark C, or TPC-C, is an on-line transaction processing (OLTP) benchmark.
+% TPC benchmarks also differ from other benchmarks in that TPC benchmarks are modeled after actual production applications and environments rather than stand-alone computer tests which may not evaluate key performance factors like user interface, communications, disk I/Os, data storage, and backup and recovery.
+% As an OLTP system benchmark, TPC-C simulates a complete environment where a population of terminal operators executes transactions against a database.
+% The benchmark is centered around the principal activities (transactions) of an order-entry environment.
+% These transactions include entering and delivering orders, recording payments, checking the status of orders, and monitoring the level of stock at the warehouses.
+% However, it should be stressed that it is not the intent of TPC-C to specify how to best implement an Order-Entry system.
+% While the benchmark portrays the activity of a wholesale supplier, TPC-C is not limited to the activity of any particular business segment, but, rather, represents any industry that must manage, sell, or distribute a product or service.
+
+在{\tpcc}中，存在大量具有特定访问模式的事务。
+以新订单（New Order）事务为例，该事务执行过程中将向数据库输入一个完整的订单。
+它代表了一个中等重量级、读写混合的事务，频繁被执行并且为了满足在线用户体验有着严格的反应时间的要求。
+这个事务是{\tpcc}的核心事务。
+新订单事务执行中，它在给定仓库、区域的组合下插入新的订单，并将该订单包含的商品一并插入数据库。
+在{\tpcc}中，每个仓库、区域的组合具有独立的订单编号，并且该订单编号在每个仓库、区域的组合下是单增的。
+因此，对于插入订单以及插入订单商品的操作，因为订单编号是作为对应表的主键之一，因此在插入过程中，对应表的主键索引总是被最大的订单编号进行索引操作。
+新订单事务在{\tpcc}中占据了接近一般的执行次数，能否较好地处理这种访问模式将直接决定数据库能否高效地完成{\tpcc}以及{\tpcc}所建模代表地广泛的现实世界在线事务处理任务。
+
+% The New-Order business transaction consists of entering a complete order through a single database transaction .
+% It represents a mid-weight, read-write transaction with a high frequency of execution and stringent response time requirements to satisfy on-line users.
+% This transaction is the backbone of the workload.
+% It is designed to place a variable load on the system to reflect on-line database activity as typically found in production environments.
+
+\subsection{访问模式对{\li}的性能影响}
+
+{\li}未考虑访问模式
+
+{\li}性能对实时访问模式非常敏感。
+
+我们构建了2种工作负载{------}均匀访问与偏向性访问。
+均匀访问均匀随机地读取所有的键。
+偏向性访问将大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
+这里使用地数据集为Open Street Map[]（OSM）的经度数据集。
+
+什么是OSM，怎么取的
+
+% \textbf{First, the query performance is sensitive to the runtime query distribution.} We build two types of workload, uniform and skewed.
+% The uniform workload evenly read every key in random order.
+% Skewed workloads all have 95\% queries reading 5\% hotkeys and hotkeys reside in different ranges.
+% The dataset is the same as \Cref{sec:the-good}.
+
+\begin{table}[!hpb]
+  \centering
+  \bicaption[指向一个表格的表目录索引]
+    % {一个颇为标准的三线表格\footnotemark[1]}
+    {{\li}在不同访问模式下的性能表现}
+    {A Table}
+  \label{tab:pattern}
+  \begin{tabular}{@{}llr@{}} \toprule
+    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
+    % Animal & Description & Price (\$)\\ \midrule
+    % Gnat & per gram & 13.65 \\
+    % & each & 0.01 \\
+    % Gnu & stuffed & 92.50 \\
+    % Emu & stuffed & 33.33 \\
+    % Armadillo & frozen & 8.99 \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+根据表\ref{tab:pattern}，在不同访问模式下面，{\li}的性能变化较为剧烈，甚至有时会比B树还差。
+比如，在第一个偏向性工作负载下，{\li}的性能和B树相近，但在第三个偏向性工作负载下，{\li}的性能比B树慢45.2\%。
+
+这是因为查询的性能是由误差值决定的，每一个具体的查询键对应的性能是由最终为它进行预测的最后级{\model}的误差决定的。
+同时，不同的{\model}会有不一样的误差值。
+表\ref{tab:pattern}的最后一行给出了最常被访问{\model}的平均误差值。
+在我们的例子里，对于偏向性工作负载，这个平均值是5\%热键对应的{\model}的误差，对于均匀工作负载，这是所有{\model}的平均误差。
+最常被访问{\model}的平均误差值在第一个偏向性工作负载和第三个偏向性工作负载下远高于其他例子。
+因此，{\li}的性能甚至比B树还要糟糕。
+
+% \Cref{tab:skewdata} shows that the \li is not always better than \bt when varying the query distribution.
+% For example, under the 1st skewed workload, \li's performance is similar to \stx, and under the 3rd skewed workloads, \li is 45.2\% slower than \stx.
+% This is because each query's performance is dominated by the error bound of the 2nd stage model which predicts the position of target key; meanwhile, each model may have different error bound.
+% The last row of \Cref{tab:skewdata} gives the average error bound of the frequently accessed models.
+% Specifically, for the skewed workload, it is the average error bound of the models predicting for 5\% hotkeys, and for uniform workload, it is the average error bound of all models.
+% The error bound of frequently accessed models in 1st and 3rd workloads is much higer than the others.
+% As a result, \li's performance can be even worse than \stx.
+
+{\li}的模型误差变化特别大
+
+{\li}的模型头尾误差特别大
+
+\subsection{动态访问模式对{\li}的性能影响}
+
+静态访问模式指的是一种访问模式不随时间变化而变化或随时间变化而变化非常小的一种访问模式变化趋势，
+而访问模式指的是一种访问模式随时间变化而变化的一种访问模式变化趋势，
+显然，对于静态访问模式，计算机系统能够更简单轻松地规划、管理
+
+% The access patterns of user requests may be static, so that they do not change over time, or dynamic.
+% It is obviously considerably easier to plan for and manage the static environments than would be the case for dynamic distributed systems.
+% Unfortunately, it is difficult to find many real-life distributed applications that would be classified as static.
+% The significant question, then, is not whether a system is static or dynamic, but how dynamic it is.
+% Incidentally, it is along this dimension that the relationship between the distributed database design and query processing is established.
