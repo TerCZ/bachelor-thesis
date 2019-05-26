@@ -20,7 +20,7 @@
 针对不同的应用场景，如读多写少、写多读少、大量小文件写操作等，各式各样的变种索引结构相继被提出[]。
 
 2018年，谷歌提出基于机器学习（Machine Learning）的索引结构\cite{kraska2018case}，将索引视为从键（Key）到数据位置的函数映射，通过多层级{\model}结构，
-使用包括神经网络在内的多种{\model}拟合这一函数关系。
+使用包括{\nn}在内的多种{\model}拟合这一函数关系。
 论文提出了三类学习索引：有序索引（Sorted Index）、无序索引（Unsorted Index）和存在索引（Existence Index），
 其中有序索引与无序索引使用相同的架构设计，{\rmi}（Recursive Model Index，RMI）。
 本文主要讨论使用{\rmi}的{\li}。
@@ -32,10 +32,10 @@
 然而，原论文\cite{kraska2018case}对{\li}的测试与分析较为初步，甚至被一些研究人员认为会具有误导性\cite{throwalgo}。
 他们假设工作场景是只读的，即被索引的数据是固定不变，{\li}不需要处理更新操作，并假设访问是均匀分布的，
 即所有数据被访问的概率是相同的。
-另一方面，在真实情景下，伴随着写操作的执行，索引数据是频繁变化的\cite{tpcc}。
-同时，真实情景下数据访问是具有偏向性（Skewed）的\cite{zhang2016reducing, debrabant2013anti, eldawy2014trekking, levandoski2013identifying}，
+另一方面，在真实场景下，伴随着写操作的执行，索引数据是频繁变化的\cite{tpcc}。
+同时，真实场景下数据访问是具有偏向性（Skewed）的\cite{zhang2016reducing, debrabant2013anti, eldawy2014trekking, levandoski2013identifying}，
 即数据存在冷热之分，大量数据访问发生在少量的热点数据上。
-这些广泛存在于真实应用里的动态场景为{\li}的应用带来了许多挑战与机遇。
+这些广泛存在于真实场景里的动态场景为{\li}的应用带来了许多挑战与机遇。
 
 本文希望进一步探索分析{\li}在动态场景下所面临的挑战，并针对性地提出解决方案，拓宽{\li}的应用范围。
 

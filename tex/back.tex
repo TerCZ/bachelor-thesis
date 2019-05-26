@@ -235,10 +235,6 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 因此，监督学习中学习算法需要具有良好的泛化能力（generalizability）[]。
 与之相对的非监督学习则是通过间接的反馈，而非直接的函数映射数据进行{\model}训练[]。
 
-\subsection{{\lr}与{\nn}}
-
-XXX
-
 % Supervised learning is the machine learning task of learning a function that maps an input to an output based on example input-output pairs.
 % [1] It infers a function from labeled training data consisting of a set of training examples.
 % [2] In supervised learning, each example is a pair consisting of an input object (typically a vector) and a desired output value (also called the supervisory signal).
@@ -258,7 +254,7 @@ XXX
 
 \subsection{自动机器学习（Automated machine learning，AutoML）}
 
-自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实世界问题上的流程，是目前热门的研究领域[]。
+自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实场景问题上的流程，是目前热门的研究领域[]。
 在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作[]。
 此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的{\model}预测性能[]。
 这些工作为机器学习的应用带来了巨大的挑赞。
@@ -285,9 +281,9 @@ XXX
 
 \section{\li}
 
-\{li}提出了使用{\model}完成索引工作的图景，并提出一系列使用{\model}的索引结构设计初步地评估了{\li}地有效性。
-\{li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
-\{li}实际上所做的即是高效地学习所需要的函数映射。
+{\li}提出了使用{\model}完成索引工作的图景，并提出一系列使用{\model}的索引结构设计初步地评估了{\li}地有效性。
+{\li}将索引视为从键到值——如在有序数组中的数据位置，在无序数据中的位置，抑或是表示数据是否存在的布尔值（boolean value）——的一个函数映射。
+{\li}实际上所做的即是高效地学习所需要的函数映射。
 论文提出了三类学习索引{------}有序索引、无序索引和存在索引，
 其中有序索引与无序索引使用相同的架构设计，{\rmi}，而存在索引则是基于循环神经网络（Recurrent Neural Network，RNN）与卷积神经网络（Convolutional Neural Network，CNN）。
 

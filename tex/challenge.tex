@@ -7,41 +7,102 @@
 即所有数据被访问的概率是相同的，因此{\li}算法以优化所有键的访问平均时间为目标。
 
 这样的假设极大地限制了{\li}地应用范围。
-在真实情景下，伴随着写操作的执行，索引数据是频繁变化的，因此{\li}构建后面对持续变化的数据分布需要持续地进行架构调整以及训练来维持良好的{\li}性能。
-同时，真实情景下数据访问是具有偏向性的，即数据存在冷热之分，大量数据访问发生在少量的热点数据上，因此针对所有的键的平均访问时间进行优化是一种过度的优化目标，
+在真实场景下，伴随着写操作的执行，索引数据是频繁变化的，因此{\li}构建后面对持续变化的数据分布需要持续地进行架构调整以及训练来维持良好的{\li}性能。
+同时，真实场景下数据访问是具有偏向性的，即数据存在冷热之分，大量数据访问发生在少量的热点数据上，因此针对所有的键的平均访问时间进行优化是一种过度的优化目标，
 并且以此作为优化目标的算法给{\li}带来性能上的缺陷。
 
-面对广泛存在于真实应用里的动态场景，{\li}的现实应用存在许多挑战与机遇。
+面对广泛存在于真实场景里的动态场景，{\li}的现实应用存在许多挑战与机遇。
 本节将探索并分析{\li}在动态场景下所面临的挑战。
 
 \section{动态数据分布带来的挑战}
 \label{sec:dist-challenge}
 
-在真实情景下，伴随着写操作的执行，索引数据是频繁变化的，从而导致数据分布的动态变化，而{\li}的设计与测试中均为考虑静态的数据分布下的性能表现。
+在真实场景下，伴随着写操作的执行，索引数据是频繁变化的，从而导致数据分布的动态变化，而{\li}的设计与测试中均为考虑静态的数据分布下的性能表现。
 本小节将探动态数据分布、动态数据分布下{\li}的性能表现，并研究分析{\li}在动态数据分布下的所遇到性能问题的成因。
 
 \subsection{动态数据分布}
 
-什么是数据分布
+在{\li}的语境下，数据分布包含两方面需要我们关注的指标{------}{\cdf}以及数据量大小。
+{\cdf}的``形状''将决定{\rmi}中{\model}的拟合结果。
+对于越``简单''的{\cdf}，{\rmi}往往能够通过简单的{\model}，比如{\lr}，获得较好的精确度。
+而数据量大小则更多影响{\rmi}最后级{\model}的个数，越多的数据量，往往需要更多的{\rmi}最后级{\model}来获得较好的性能。
+除此之外，实际情况中在{\cdf}的``形状''与数据量大小均为发生变化时，如果搜索键的范围发生了移动，{\li}也需要通过重新训练来适应新的{\cdf}。
 
-什么是动态数据分布
+真实场景中存在这大量的写操作，包括插入、删除以及更新，其中更新操作可以看作是先删除再插入的组合操作。
+因为写操作的存在，被索引的数据将持续地发生变化，从而影响{\cdf}与数量大小，导致真实场景下数据分布往往是动态变化的。
+在真实场景下，几乎不存在静态的数据分布。
+即使是以更新操作极为稀少的在线事务分析（on-line analytical processing，OLAP）也往往包括定期的数据更新操作，从而导致数据分布的变化。
 
-为什么会有动态数据分布
+\subsubsection{真实场景中的动态数据分布}
 
-以某tpcc txn为例
+动态数据分布广泛地存在于真实的应用场景中，任何包含写操作的真实场景下数据分布都是动态的。
+比如在电子商务应用中，添加商品信息、用户订单等操作，会不断地修改被索引的数据，从而导致数据分布的动态变化。
 
-\subsection{动态数据分布对{\li}性能影响}
+接下来我们通过{\tpcc}来展示广泛存在于真实场景中的动态数据分布。
+{\tpcc}是一个用于测试事务处理系统性能与性价比的一个基准测试程序，被广泛地用来测试与评估商业数据库系统与数据库系统学术原型。
+{\tpcc}是一个根据实际生产环境应用和环境而建模的在线事务处理（on-line transaction processing，OLTP）的基准测试程序。
+作为一个在线事务处理基准测试程序，{\tpcc}模拟一个由终端操作员对于数据库执行交易的完整环境。
+这个基准测试程序的中心是一个在订单输入的环境里的重要操作。
+这些事务包括输入订单、运输订单、记录付款操作、检查订单状态以及统计仓库库存状态。
 
-{\li}未考虑xxx，动态数据分布对{\li}的影响
+% The Transaction Processing Performance Council (TPC) is about to approve the third in its series of benchmarks which measure the performance and price/performance of transaction processing systems.
+% Like TPC-A, the TPC's first benchmark, the new TPC Benchmark C, or TPC-C, is an on-line transaction processing (OLTP) benchmark.
+% TPC benchmarks also differ from other benchmarks in that TPC benchmarks are modeled after actual production applications and environments rather than stand-alone computer tests which may not evaluate key performance factors like user interface, communications, disk I/Os, data storage, and backup and recovery.
+% As an OLTP system benchmark, TPC-C simulates a complete environment where a population of terminal operators executes transactions against a database.
+% The benchmark is centered around the principal activities (transactions) of an order-entry environment.
+% These transactions include entering and delivering orders, recording payments, checking the status of orders, and monitoring the level of stock at the warehouses.
+% However, it should be stressed that it is not the intent of TPC-C to specify how to best implement an Order-Entry system.
+% While the benchmark portrays the activity of a wholesale supplier, TPC-C is not limited to the activity of any particular business segment, but, rather, represents any industry that must manage, sell, or distribute a product or service.
 
-{\cdf}的变化
+在{\tpcc}中，存在大量包含写操作的事务。
+以新订单（New Order）事务为例，该事务执行过程中将向数据库输入一个完整的订单。
+它代表了一个中等重量级、读写混合的事务，频繁被执行并且为了满足在线用户体验有着严格的反应时间的要求。
+这个事务是{\tpcc}的核心事务。
+新订单事务执行中，它在给定仓库、区域的组合下插入新的订单，并将该订单包含的商品一并插入数据库。
+另一个代表性的事务是投递（Delivery）事务，这个事务会一次性处理10个尚未被投递的订单。
+每个订单会在一个读写事务中被处理完成。
+投递事务包含多个数据库事务，被执行的频率较低，对响应时间的要求更低。
+通过不断执行新订单事务与投递事务，新订单表等相关数据库表被不断写入与删除订单对应的数据条目，从而使得相关表被不断地更新，而索引所面对的数据分布变得动态。
 
-数据量的变化
+% The New-Order business transaction consists of entering a complete order through a single database transaction .
+% It represents a mid-weight, read-write transaction with a high frequency of execution and stringent response time requirements to satisfy on-line users.
+% This transaction is the backbone of the workload.
+% It is designed to place a variable load on the system to reflect on-line database activity as typically found in production environments.
+
+% The Delivery business transaction consists of processing a batch of 10 new (not yet delivered) orders.
+% Each order is processed (delivered) in full within the scope of a read -write database transaction.
+% The number of orders delivered as a group (or batched) within the same database transaction is implementation specific.
+% The business transaction, comprised of one or more (up to 10) database transactions, has a low frequency of execution and must complete within a relaxed response time requirement.
+
+\subsubsection{动态数据分布对通用索引结构性能的影响}
+
+对于通用索引结构而言，动态数据分布下的读操作与写操作的复杂度往往没有本质上的区别。
+以B树为例，它的读操作与写操作的复杂度都是$O(log(n))$，其中$n$为数据量大小。
+然而，因为这些索引结构往往把数据结构完整性（integrity）的维护工作分摊在了每一次修改操作中，如B数的节点分裂（split）与合并（merge）操作是在每次写操作完成后进行的，
+所以通常来说对于通用索引结构而言，写操作会有略高的操作复杂读。
+同时，出于对并发性（concurrency）的考虑，并发索引结构可能会使用乐观并发控制或锁机制等方案来保证数据结构的一致性（consistency），从而再次对写操作的开销带来更多的负担。
+
+\subsection{动态数据分布对{\li}性能的影响}
+\label{sec:dist-affect-li}
+
+与常见索引结构不同的是，{\li}在设计中仅考虑了不现实的静态数据分布的场景，即{\li}并不支持更新操作，因此面对动态数据分布，
+{\li}性能将收到多方案的挑战\footnote{当然，最重要的一个挑战是如何高效地支持更新操作。然而这一问题超出了本文探究的范围，
+在接下来的讨论中我们假设对{\li}的写操作能被高效处理，并探讨在这一基础之上{\li}性能面对的挑战。}。
+
+正如上文提到，{\cdf}的``形状''发生变化时，{\rmi}架构需要重新选择，因为在过去的{\cdf}下能够进行高效拟合的{\model}可能将会产生更大的误差，从而导致{\li}的性能降低。
+类似的，过去针对较难精确拟合的{\cdf}设计的{\rmi}架构可能对于新的{\cdf}而言有许多不必要的计算，比如{\rmi}层数太多与{\model}太复杂，从而产生更坏的{\li}性能。
+同样的，数据量由少变多时，原有的{\rmi}最后级{\model}可能已经无法在较大的数据量下保持优秀的准确度[]，这时候可能需要通过调整{\rmi}最后级{\model}的个数或者更改{\model}类型来维持{\li}性能的影响的。
+类似的，当数据量由多变少，{\model}类型以及{\rmi}最后级{\model}个数可能也需要进行调整来持续为索引操作提供良好的性能。
+
+然而，尽管直观上我们可以总结出以上动态数据分布对{\li}性能的影响，但是由于{\model}难以量化的预测性能，我们缺乏可靠的规则来控制{\rmi}架构。
+事实上，在第一次构建{\li}时，我们也缺乏可靠的指导依据来直到应该使用什么样子的{\rmi}架构，我们之能通过类似网格搜索[]（grid search）的方法在一定搜索范围内通过枚举的手段来完成。
+当数据分布发生变化时，为了维持{\li}的优秀性能，我们仍需要不断进行枚举搜索来确定{\rmi}架构。
 
 \subsection{动态数据分布下搜索最优{\li}架构}
+\label{sec:search-best}
 
 寻找最优{\li}架构代价非常昂贵，往往需要大量的时间与计算资源才能决定最好的{\li}架构。
-比如说，使用简单的搜索技术，如网格搜索搜索[]（grid search），往往需要10到100倍的训练时间。
+比如说，使用简单的搜索技术，如网格搜索搜索，往往需要10到100倍的训练时间。
 {\li}的多级架构使这一任务更加困难，因为不同的级可以有不一样的{\model}类型和不同的{\model}数量，这些特性会指数级地增加架构搜索空间，
 从而影响寻找最优{\li}架构成为非常昂贵的一项任务。
 
@@ -49,6 +110,17 @@
 % For example, it can take up to 10-100X of the model training time with basic search techniques such as grid search \cite{becsey1968nonlinear, lavalle2004relationship, bergstra2011algorithms}.
 % \li's stage-based design makes this task even harder, as a different stage can have a different type of models, which exponentially increases the architecture search space.
 % \input{distdata}
+
+\begin{figure}[!htp]
+  \centering
+%   \includegraphics[width=4cm]{example/sjtulogo.png}
+%   \hspace{1cm}
+%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \bicaption[这里将出现在插图索引中]
+    {不同数据分布的数据集}
+    {English caption}
+  \label{fig:dist}
+\end{figure}
 
 \begin{table}[!hpb]
   \centering
@@ -68,16 +140,19 @@
   \end{tabular}
 \end{table}
 
-为了减少搜索空间，一个直观的启发式规则是``如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的{\model}，比如神经网络''。
+为了减少搜索空间，一个直观的启发式规则是``如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的{\model}，比如{\nn}''。
 不幸的是，这一启发式规则并不能够其效果。
-我们配置了四个不同分布的数据集，将{\li}架构限定为只有两级且第二级固定为1万个{\lr}，并尝试用以上的启发式规则其决定第一级的{\model}类型。
+我们配置了四个不同分布的数据集（图\ref{fig:dist}），将{\li}架构限定为只有两级且第二级固定为1万个{\lr}，并尝试用以上的启发式规则其决定第一级的{\model}类型。
 在表\ref{tab:dist}中，当在第一级使用{\lr}时，它的损失函数{------}均方误差（mean square error）从第一个数据集（D1）到最后一个数据集（D4）不断增加。
 这说明第一个数据集被{\lr}更好地拟合了，相比其他数据集。
 同时，通过改变隐藏层（hidden layer）个数以及每个隐藏层的神经元（neuron）个数，我们尝试了不同{\nn}配置并选取了最优的{\nn}配置。
 根据以上启发式规则，对于以上四个数据集，将第一级{\model}替换成{\nn}将会表现出越来越大的相对使用{\lr}的{\li}配置的性能提升。
 然而{\nn}仅仅在第二个数据集（D2）和第三个数据集（D3）上提升了性能。
+
+根据第\ref{sec:dist-affect-li}节的讨论，这一现象是符合预期。
 这一现象之后有两个原因。
-首先，{\nn}的计算代价远高于{\lr}{------}{\nn}需要80 ns而{\lr}仅需要16 ns。
+首先，{\nn}的计算代价远高于{\lr}{------}{\nn}需要80 ns而{\lr}仅需要16 ns，因此通过使用更复杂的{\model}来降低预测误差值需要支付更高的{\model}执行时间代价，
+从而导致最终使用简单{\model}的{\rmi}配置会有更好的性能表现。
 其次，尽管较高的损失函数值表示第一级的{\lr}的拟合结果不够精确，但这并不能够说明第二级的{\model}不能够很好地拟合数据。
 因此，当在第一级使用{\lr}时，{\model}的平均误差值只比第一级使用{\nn}的架构稍微大一些。
 因此，对于第四个数据集，最终具有更好性能的架构是使用{\lr}的架构。
@@ -97,14 +172,15 @@
 % Thus, for D4, LR is the model should be used in the first stage.
 
 出了这个启发式规则外，我们也尝试了目前最佳的优化方法{------}贝叶斯超参数优化（bayesian hyperparameter optimization）{------}来寻找最优的{\li}架构成为非常昂贵的一项任务。
-尽管将级数限定为2，我们仍需要21分钟来找到最优的架构。
+同样的，我们将搜索范围限定为只有两级且第二级固定为1万个{\lr}，仅用这一方法来决定第一级的{\model}类型。
+然而我们仍需要21分钟来找到最优的架构，这样的过长的搜索时间在真实场景下是不可接受的。
 
 % Besides this heuristic, we also try to use some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to automatically search the best architecture.
 % Even we constraint the stage number to be no larger than 2, it still takes about 21 minutes to find the best architecture.
 
 \section{访问模式带来的挑战}
 
-真实情景中数据访问往往不是均匀分布的，而是展现出不同的访问模式，而{\li}的设计与测试中均为考虑在不同的访问模式下的性能表现。
+真实场景中数据访问往往不是均匀分布的，而是展现出不同的访问模式，而{\li}的设计与测试中均为考虑在不同的访问模式下的性能表现。
 本小节将探讨何为访问模式、访问模式下{\li}的性能表现，并研究分析{\li}在变化各异的访问模式下的所遇到性能问题的成因。
 
 \subsection{访问模式}
@@ -137,26 +213,9 @@
 比如对于电子商务应用，最新添加的数据，如商品信息、用户订单等，往往是最常被访问的，相反，
 老数据很少被访问，比如多年前发生的交易信息等。
 
-{\tpcc}是一个用于测试事务处理系统性能与性价比的一个基准测试程序，被广泛地用来测试与评估商业数据库系统与数据库系统学术原型。
-{\tpcc}是一个根据实际生产环境应用和环境而建模的在线事务处理（on-line transaction processing，OLTP）的基准测试程序。
-作为一个在线事务处理基准测试程序，{\tpcc}模拟一个由终端操作员对于数据库执行交易的完整环境。
-这个基准测试程序的中心是一个在订单输入的环境里的重要操作。
-这些事务包括输入订单、运输订单、记录付款操作、检查订单状态以及统计仓库库存状态。
-
-% The Transaction Processing Performance Council (TPC) is about to approve the third in its series of benchmarks which measure the performance and price/performance of transaction processing systems.
-% Like TPC-A, the TPC's first benchmark, the new TPC Benchmark C, or TPC-C, is an on-line transaction processing (OLTP) benchmark.
-% TPC benchmarks also differ from other benchmarks in that TPC benchmarks are modeled after actual production applications and environments rather than stand-alone computer tests which may not evaluate key performance factors like user interface, communications, disk I/Os, data storage, and backup and recovery.
-% As an OLTP system benchmark, TPC-C simulates a complete environment where a population of terminal operators executes transactions against a database.
-% The benchmark is centered around the principal activities (transactions) of an order-entry environment.
-% These transactions include entering and delivering orders, recording payments, checking the status of orders, and monitoring the level of stock at the warehouses.
-% However, it should be stressed that it is not the intent of TPC-C to specify how to best implement an Order-Entry system.
-% While the benchmark portrays the activity of a wholesale supplier, TPC-C is not limited to the activity of any particular business segment, but, rather, represents any industry that must manage, sell, or distribute a product or service.
-
+我们再次以{\tpcc}作为真实场景的样例。
 在{\tpcc}中，存在大量具有特定访问模式的事务。
-以新订单（New Order）事务为例，该事务执行过程中将向数据库输入一个完整的订单。
-它代表了一个中等重量级、读写混合的事务，频繁被执行并且为了满足在线用户体验有着严格的反应时间的要求。
-这个事务是{\tpcc}的核心事务。
-新订单事务执行中，它在给定仓库、区域的组合下插入新的订单，并将该订单包含的商品一并插入数据库。
+以新订单（New Order）事务为例，它在执行给定仓库、区域的组合下插入新的订单，并将该订单包含的商品一并插入数据库。
 在{\tpcc}中，每个仓库、区域的组合具有独立的订单编号，并且该订单编号在每个仓库、区域的组合下是单增的。
 因此，对于插入订单以及插入订单商品的操作，因为订单编号是作为对应表的主键之一，因此在插入过程中，对应表的主键索引总是被最大的订单编号进行索引操作。
 新订单事务在{\tpcc}中占据了接近一般的执行次数，能否较好地处理这种访问模式将直接决定数据库能否高效地完成{\tpcc}以及{\tpcc}所建模代表地广泛的现实世界在线事务处理任务。
@@ -166,7 +225,7 @@
 % This transaction is the backbone of the workload.
 % It is designed to place a variable load on the system to reflect on-line database activity as typically found in production environments.
 
-\subsubsection{访问模式对索引结构性能的影响}
+\subsubsection{访问模式对通用索引结构性能的影响}
 
 对于大部分的索引结构，访问模式中的访问局部性特性均会对其性能产生不同程度的影响。
 对于这些索引结构，具有较差的访问局部性或者不具有任何访问局部性，即纯粹的乱序访问，将展现出索引结构的平均性能，
@@ -193,6 +252,7 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏
 % Our results show that hybrid indexes provide comparable throughput to the original ones while reducing the memory overhead by up to 70%.
 
 \subsection{访问模式对{\li}性能的影响}
+\label{sec:pattern-affect-li}
 
 尽管访问模式，特别是访问模式中潜在的访问局部性对索引结构的性能有着较大的影响，然而{\li}在设计中并未对这一问题有充分的考虑。
 如在第\ref{sec:rmi}节与第\ref{sec:rmi-train-inference}节所描述，根据算法\ref{algo:rmi-train}，目前{\rmi}的训练过程中，
@@ -311,4 +371,4 @@ OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例�
 
 然而，类似第\ref{sec:dist-challenge}节讨论的，{\li}的设计并没有考虑动态的访问模式。
 事实上，{\li}目前是一种``一次构建不再改变''的索引结构。
-因此当面对真实应用中随处可见的动态访问模式，{\li}的性能将会更加的波动剧烈且不可预测，{\li}的应用前景再一次收到严重挑战。
+因此当面对真实场景中随处可见的动态访问模式，{\li}的性能将会更加的波动剧烈且不可预测，{\li}的应用前景再一次收到严重挑战。
