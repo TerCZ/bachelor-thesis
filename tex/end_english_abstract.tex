@@ -3,24 +3,89 @@
 % !TEX root = ../thesis.tex
 % !TEX encoding = UTF-8 Unicode
 \begin{bigabstract}
-Affronting discretion as do is announcing. Now months esteem oppose nearer enable too six. She numerous unlocked you perceive speedily. Affixed offence spirits or ye of offices between. Real on shot it were four an as. Absolute bachelor rendered six nay you juvenile. Vanity entire an chatty to. 
+The recent proposal of learned index structures opens up a new perspective on how traditional range indexes can be optimized.
+The pioneer study on learned index structures arouses a lot of excitements around how machine learning can resculpt system components that have been decades-old, such as bloom filters, join queries or even enable self-tuning databases.
 
-Admiration we surrounded possession frequently he. Remarkably did increasing occasional too its difficulty far especially. Known tiled but sorry joy balls. Bed sudden manner indeed fat now feebly. Face do with in need of wife paid that be. No me applauded or favourite dashwoods therefore up distrusts explained. 
+The insight is that indexes can be viewed as functions from the data (key) to the values representing either record positions in a sorted array (for range index), in an unsorted array (for Hash-Index) or whether the data exists or not (for BitMap-Index).
+For the case of range index, the function is effectively a cumulative distribution function (CDF).
+Given the CDF $F$, the positions can be predicted by: $p=F(\text{Key})*N$ where $p$ is the position of the key and $N$ is the total number of keys.
 
-Is education residence conveying so so. Suppose shyness say ten behaved morning had. Any unsatiable assistance compliment occasional too reasonably advantages. Unpleasing has ask acceptance partiality alteration understood two. Worth no tiled my at house added. Married he hearing am it totally removal. Remove but suffer wanted his lively length. Moonlight two applauded conveying end direction old principle but. Are expenses distance weddings perceive strongly who age domestic. 
+The core idea is to approximate the CDF function $F$ by machine learning models such as deep neural networks.
+While the choice of the model architectures can vary, the paper proposes a \emph{staged model} architecture inspired by the multi-stage structure of B-Tree.
+The sub-model at each stage predicts which sub-models to be activated in the next stage while the leaf stage directly predicts the CDF values.
+The model is trained from the root stage to the leaf stage, and each stage is trained separately using the following loss function: $L_l=\sum_{(x,y)}(f_l^{(\lfloor M_lf_{l-1}(x)/N\rfloor )}(x)-y)^2~;~L_0=\sum_{(x,y)}(f_0(x)-y)^2$.
+Here, $(x,y)$ is the key/position pair from the data to be indexed; $L_l$ is the loss function of stage $l$; $f_l^{(k)}$ is the $k^{th}$ sub-model of stage $l$.
+$f_{l-1}$ recursively executes the above equation until the root stage $L_0$.
 
-Unpleasant astonished an diminution up partiality. Noisy an their of meant. Death means up civil do an offer wound of. Called square an in afraid direct. Resolution diminution conviction so mr at unpleasing simplicity no. No it as breakfast up conveying earnestly immediate principle. Him son disposed produced humoured overcame she bachelor improved. Studied however out wishing but inhabit fortune windows. 
+To deploy the learned index, the approximation error needs to be corrected.
+First, the prediction error can be bounded by looking at the maximum distance $\sigma$ between the predicted and the true positions for each key.
+Hence, if $pos$ is the predicted position by the learned index, the true position is guaranteed to be within $[pos-\sigma, pos+\sigma]$, and a binary search can be used.
+The error bound $\sigma$ is thus a critical indicator of the effectiveness of the learned index.
+The smaller $\sigma$ is, the more effective is the index.
 
-Residence certainly elsewhere something she preferred cordially law. Age his surprise formerly mrs perceive few stanhill moderate. Of in power match on truth worse voice would. Large an it sense shall an match learn. By expect it result silent in formal of. Ask eat questions abilities described elsewhere assurance. Appetite in unlocked advanced breeding position concerns as. Cheerful get shutters yet for repeated screened. An no am cause hopes at three. Prevent behaved fertile he is mistake on. 
+However, the current learned indexes assume the data distribution is relatively static and the access pattern is uniform, while real-world scenarios consist of skew query distribution and evolving data.
+These two issues hinder the wider adoption of the learned indexes for real-world workloads.
+In this paper, we demonstrate that the missing consideration of access patterns and dynamic data distribution notably hinders the applicability of learned indexes.
 
-Rendered her for put improved concerns his. Ladies bed wisdom theirs mrs men months set. Everything so dispatched as it increasing pianoforte. Hearing now saw perhaps minutes herself his. Of instantly excellent therefore difficult he northward. Joy green but least marry rapid quiet but. Way devonshire introduced expression saw travelling affronting. Her and effects affixed pretend account ten natural. Need eat week even yet that. Incommode delighted he resolving sportsmen do in listening. 
+Their preliminary study assumes a relatively static distribution function, while in many real world scenarios, the data is constantly evolving.
+Typical approaches simply rely on re-training the whole model once the data distribution shifts notably from the training set used by the current model.
+However, such re-training is costly, because not only the model parameters need to be \textit{fine-tuned}, but also that the model architecture needs to be searched again for better accuracy.
+An advantage of using complex models (e.g., neural networks) at the first stage is that it can approximate the complex distribution which cannot be fitted with linear model.
+As a result, for those distributions, the complex network is able to dispatch the data more evenly than simple models, which is good for the uniform workload.
+However, \textbf{complex model is good for the complex distribution, but not always.}
+This is because of the computation cost of complex models.
+With the first stage model getting more complex, even though the binary search time decreases, but the model computation time increases.
+Because of this tradeoff, though for some distributions that complex models like neural networks can save the binary search time, using linear model can achieve better the overall query time.
+As a result, no heuristics can precisely tell which model architecture should be used.
+Depending on the size of the hyperparamter search space, a basic architecture search technique such as grid search can easily take up to 10-100x the model training time.
 
-Sex and neglected principle ask rapturous consulted. Object remark lively all did feebly excuse our wooded. Old her object chatty regard vulgar missed. Speaking throwing breeding betrayed children my to. Me marianne no he horrible produced ye. Sufficient unpleasing an insensible motionless if introduced ye. Now give nor both come near many late. 
+Besides the inefficiency in handling dynamic workloads, the learned index paper also assumes a uniform access pattern (or query distribution).
+However, queries in real worlds tend to be skew, where some keys are much more frequently queried than the others.
+Querying a key with learned index has two steps: first, it predicts the position by model computation; Second, it tries to find the actual position using binary search in a bounded range.
+However, its latency usually depends on the binary search, as it takes much longer time than model computation, in our evaluation.
+Further, the search area is decided by the error bound\footnote{the difference between minimum and maximum prediction error} of the last stage model who has the key.
+Thus, we have the following observation.
+\textbf{A skew workload's performance is dominated by the hot models' error bound.}
+Hot model is defined as the last stage model who holds a hot (frequently accessed) key.
+Given a workload, all models' error bounds can vary across different model architectures, including the hot models'.
+As a result, predicting a hot key with large model error bound is way more expensive, and we show that the originally proposed learned index model performs poorly under such scenarios.
 
-Is branched in my up strictly remember. Songs but chief has ham widow downs. Genius or so up vanity cannot. Large do tried going about water defer by. Silent son man she wished mother. Distrusts allowance do knowledge eagerness assurance additions to. 
+In this paper, we propose \sys, a new learned index system for dynamic workloads where the data distribution and access pattern may be skew and evolving.
+\sys incorporates read access pattern using the \textbf{Training Set Generator} and the \textbf{Finalizer} and reuses pre-trained models using the \textbf{Counselor}.
+To handle skewed access pattern, we first investigate and discuss why the original model fails to address this issue.
+To improve the latency for skew queries, \sys augments the training data with access frequencies.
+For the issue of model re-training, our insight is that the same model architecture can be reused for similar data distribution and access pattern.
+To address the slow model re-training when data distribution shifts, \sys caches the previously-trained models and incrementally fine-tunes them for similar access patterns and data distribution.
 
-Fat son how smiling mrs natural expense anxious friends. Boy scale enjoy ask abode fanny being son. As material in learning subjects so improved feelings. Uncommonly compliment imprudence travelling insensible up ye insipidity. To up painted delight winding as brandon. Gay regret eat looked warmth easily far should now. Prospect at me wandered on extended wondered thoughts appetite to. Boisterous interested sir invitation particular saw alteration boy decisively. 
+Training Set Generator takes the workload and dataset as input, extracts the access pattern by uniformly sampling from the workload and ``stretches'' the dataset according to the access pattern.
+Then it sends the stretched training set to Counselor to get a tuned model.
+Instead of improving the prediction accuracy of the hot keys, \sys focus on the error bounds of the models containing the hot keys (hot models).
+Since the models assigned with few keys tend to have small error bounds, we try to reduce the number of keys handled by the hot models by ``stretching'' the dataset.
+If a key is frequently accessed, we would like to increase the distance between it with its neighbors, the key before or after it.
+It can be achieved by simply multiplying the position labels be the cumulative access frequency of given keys.
+% Specifically, given a key with position $p$ before ``stretching'', if its access frequency is $f$, and the dataset size is $N$ then we need to shift its position to be $p + (n-1)/2$, and shift all keys after it with $n-1$.
+% For the above example, the training set of \{(a, 0), (b, 1), (c, 2)\} with access frequency 1:2:1 will be augmented to be \{(a, 0), (b, 1.5), (c, 3)\}.
+% Figure~\ref{fig:stretch} shows the CDF of dataset 1 before and after ``stretching'' with the access pattern in workload Skewed 3.
 
-Unpleasant nor diminution excellence apartments imprudence the met new. Draw part them he an to he roof only. Music leave say doors him. Tore bred form if sigh case as do. Staying he no looking if do opinion. Sentiments way understood end partiality and his. 
+After incorporating the access pattern, the only factor affecting the model architecture is data distribution.
+We notice that the best model architecture tends to be the same for similar data distributions.
+As a result, \sys is able to cache a mapping from data distributions to models for future reusing.
+This is done by the Counselor component, which includes four modules: Analyzer, Model Cache, Fine Tuner and Auto-tuner.
+Analyzer extracts distribution information by uniformly sampling $K$ records from the generated training set, then normalize both key and position to [0, 1].
+However, $K$ needs to be large enough to avoid breaking the distribution.
+Model Cache maintains a mapping from the distribution of previous training set to their learning model's architure and parameters.
+If it receives a distribution from Analyzer, it will finds the entry in the map with the most similar distribution based on the mean square error.
+Then, it will send the model's information in that entry to Fine Tuner.
+Furthermore, if the similarity is below a threshold, it will also start the auto-tuning process.
+Fine Tuner incrementally trains the model retrieved from the model cache with the training set.
+Auto-tuner uses grid search to find the best model architecture in the given search space.
+It performs auto-tuning at the background and sends the result to the Finalizer component.
+
+Before using the returned model from Counselor, the Finalizer needs to retrain the last stage models with the original dataset.
+This is because the position of each key in the stretched training set is changed, we need to repair the position information with the original dataset.
+This process is considerably fast as last models are usually linear models.
+% For example, it only takes 118 $\mu$s to retrain one last model with 1000 keys.
+
+The preliminary result shows that, by augmenting dataset with the access frequency, the best model architecture has 45.1\% performance improvement; by caching and reusing previous training result, the rebuilding time is reduced to XXX.
 
 \end{bigabstract}

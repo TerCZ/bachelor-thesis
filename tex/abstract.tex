@@ -33,20 +33,20 @@
 
 The recent proposal of learned index structures opens up a new perspective on how traditional range indexes can be optimized.
 The pioneer study on learned index structures arouses a lot of excitements around how machine learning can resculpt system components that have been decades-old, such as bloom filters, join queries or even enable self-tuning databases.
-
 The core insight of learned indexes is to view index as a distribution function from the keys to the index positions that can be approximated by deep neural networks.
-Nevertheless, their preliminary study assumes a relatively static distribution function, while in many real world scenarios, the data is constantly evolving.
+
+However, the current learned indexes assume the data distribution is relatively static and the access pattern is uniform, while real-world scenarios consist of skew query distribution and evolving data.
+These two issues hinder the wider adoption of the learned indexes for real-world workloads.
+In this paper, we demonstrate that the missing consideration of access patterns and dynamic data distribution notably hinders the applicability of learned indexes.
+
+Their preliminary study assumes a relatively static distribution function, while in many real world scenarios, the data is constantly evolving.
 Typical approaches simply rely on re-training the whole model once the data distribution shifts notably from the training set used by the current model.
 However, such re-training is costly, because not only the model parameters need to be \textit{fine-tuned}, but also that the model architecture needs to be searched again for better accuracy.
 Depending on the size of the hyperparamter search space, a basic architecture search technique such as grid search can easily take up to 10-100x the model training time.
 
-However, the current learned indexes assume the data distribution is relatively static and the access pattern is uniform, while real-world scenarios consist of skew query distribution and evolving data.
-
 Besides the inefficiency in handling dynamic workloads, the learned index paper also assumes a uniform access pattern (or query distribution).
 However, queries in real worlds tend to be skew, where some keys are much more frequently queried than the others.
 As a result, mispredicting a hot key is way more expensive, and we show that the originally proposed learned index model performs poorly under such scenarios.
-These two issues hinder the wider adoption of the learned indexes for real-world workloads.
-In this paper, we demonstrate that the missing consideration of access patterns and dynamic data distribution notably hinders the applicability of learned indexes.
 
 In this paper, we propose \sys, a new learned index system for dynamic workloads where the data distribution and access pattern may be skew and evolving.
 To handle skewed access pattern, we first investigate and discuss why the original model fails to address this issue.
