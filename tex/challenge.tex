@@ -91,11 +91,11 @@
 
 正如上文提到，{\cdf}的``形状''发生变化时，{\rmi}架构需要重新选择，因为在过去的{\cdf}下能够进行高效拟合的{\model}可能将会产生更大的误差，从而导致{\li}的性能降低。
 类似的，过去针对较难精确拟合的{\cdf}设计的{\rmi}架构可能对于新的{\cdf}而言有许多不必要的计算，比如{\rmi}层数太多与{\model}太复杂，从而产生更坏的{\li}性能。
-同样的，数据量由少变多时，原有的{\rmi}最后级{\model}可能已经无法在较大的数据量下保持优秀的准确度[]，这时候可能需要通过调整{\rmi}最后级{\model}的个数或者更改{\model}类型来维持{\li}性能的影响的。
+同样的，数据量由少变多时，原有的{\rmi}最后级{\model}可能已经无法在较大的数据量下保持优秀的准确度，这时候可能需要通过调整{\rmi}最后级{\model}的个数或者更改{\model}类型来维持{\li}性能的影响的。
 类似的，当数据量由多变少，{\model}类型以及{\rmi}最后级{\model}个数可能也需要进行调整来持续为索引操作提供良好的性能。
 
 然而，尽管直观上我们可以总结出以上动态数据分布对{\li}性能的影响，但是由于{\model}难以量化的预测性能，我们缺乏可靠的规则来控制{\rmi}架构。
-事实上，在第一次构建{\li}时，我们也缺乏可靠的指导依据来直到应该使用什么样子的{\rmi}架构，我们之能通过类似网格搜索[]（grid search）的方法在一定搜索范围内通过枚举的手段来完成。
+事实上，在第一次构建{\li}时，我们也缺乏可靠的指导依据来直到应该使用什么样子的{\rmi}架构，我们之能通过类似网格搜索\cite{lavalle2004relationship, lerman1980fitting}（grid search）的方法在一定搜索范围内通过枚举的手段来完成。
 当数据分布发生变化时，为了维持{\li}的优秀性能，我们仍需要不断进行枚举搜索来确定{\rmi}架构。
 
 \subsection{动态数据分布下搜索最优{\li}架构}
@@ -116,18 +116,18 @@
 %   \includegraphics[width=4cm]{example/sjtulogo.png}
 %   \hspace{1cm}
 %   \includegraphics[width=4cm]{example/sjtulogo.jpg}
-  \bicaption[这里将出现在插图索引中]
-    {不同数据分布的数据集}
-    {English caption}
+  \bicaption[不同数据集的{\cdf}]
+    {不同数据集的{\cdf}}
+    {CDFs of different datasets}
   \label{fig:dist}
 \end{figure}
 
 \begin{table}[!hpb]
   \centering
-  \bicaption[指向一个表格的表目录索引]
+  \bicaption[不同数据集下使用不同{\rmi}架构的{\li}性能表现]
     % {一个颇为标准的三线表格\footnotemark[1]}
-    {{\li}在不同数据分布下的性能表现}
-    {A Table}
+    {不同数据集下使用不同{\rmi}架构的{\li}性能表现}
+    {The learned index performance with varying RMI architecture under different datasets}
   \label{tab:dist}
   \begin{tabular}{@{}llr@{}} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
@@ -271,9 +271,9 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏
 %   \includegraphics[width=4cm]{example/sjtulogo.png}
 %   \hspace{1cm}
 %   \includegraphics[width=4cm]{example/sjtulogo.jpg}
-  \bicaption[这里将出现在插图索引中]
-    {{\rmi}中数据分配均匀程度示意图}
-    {English caption}
+  \bicaption[{\rmi}数据分配均匀程度示意图]
+    {{\rmi}数据分配均匀程度示意图}
+    {The illustration of RMI data dispatch evenness}
   \label{fig:rmi-dispatch}
 \end{figure}
 
@@ -293,16 +293,16 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏
 %   \includegraphics[width=4cm]{example/sjtulogo.png}
 %   \hspace{1cm}
 %   \includegraphics[width=4cm]{example/sjtulogo.jpg}
-  \bicaption[这里将出现在插图索引中]
+  \bicaption[{\osm}的{\cdf}]
     {{\osm}的{\cdf}}
-    {English caption}
+    {The CDF of OSM dataset}
   \label{fig:osm-cdf}
 \end{figure}
 
 为了探究访问模式对{\li}性能的影响，我们构建了2种工作负载{------}{\uniwl}和{\skewwl}。
 其中，{\uniwl}均匀随机地读取所有的搜索键，{\skewwl}则大量地访问少部分地键{------}95\%的访问发生在5\%的热键中，且这些热键存放在不同的范围内。
 根据上文分析，不同的{\skewacc}对{\rmi}有不同的性能影响，而且完全取决于{\model}在训练过程中的误差，因此我们设计了多组{\skewwl}来模拟不同的{\skewacc}。
-我们使用OpenStreetMap[]（OSM）的经度数据集作为测试数据集。
+我们使用OpenStreetMap\cite{osm}（OSM）的经度数据集作为测试数据集。
 OpenStreetMap是一项旨在创建一个可自由编辑的世界地图的协作项目，它最重要的产出不仅包括地图本身，而这围绕此项目产生的数据也是非常重要的产出。
 OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例。
 我们从OpenStreetMap中随机抽取了2亿条经度信息作为搜索键，构成{\osm}。
@@ -320,10 +320,10 @@ OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例�
 
 \begin{table}[!hpb]
   \centering
-  \bicaption[指向一个表格的表目录索引]
+  \bicaption[{\li}在不同访问模式下的性能表现]
     % {一个颇为标准的三线表格\footnotemark[1]}
     {{\li}在不同访问模式下的性能表现}
-    {A Table}
+    {The learned index performance under different access patterns}
   \label{tab:pattern}
   \begin{tabular}{@{}llr@{}} \toprule
     % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}

@@ -17,7 +17,7 @@
 例如数据库系统中大量使用一级索引（Primary Index）和二级索引（Secondary Index）提高点查（Point Lookup）、
 连接（Join）等操作的性能；文件系统常用基于inode的索引结构完成文件查找等操作。
 传统的索引结构，包括B树（B-tree）、前缀数（Trie）与哈希表（Hash Table）在过去的几〸年内被广泛研究，
-针对不同的应用场景，如读多写少、写多读少、大量小文件写操作等，各式各样的变种索引结构相继被提出[]。
+针对不同的应用场景，如读多写少、写多读少、大量小文件写操作等，各式各样的变种索引结构相继被提出\cite{zhang2016reducing, esmet2012tokufs, bender2015and, mao2012cache, wu2019wormhole, fittingtree, morrison1968patricia, boehm2011efficient, leis2013adaptive}。
 
 2018年，谷歌提出基于机器学习（Machine Learning）的索引结构，{\li}\cite{kraska2018case}，将索引视为从键（Key）到数据位置的函数映射，通过多层级{\model}结构，
 使用包括{\nn}在内的多种{\model}拟合这一函数关系。
