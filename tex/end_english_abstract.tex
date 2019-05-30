@@ -70,14 +70,14 @@ It can be achieved by simply multiplying the position labels be the cumulative a
 After incorporating the access pattern, the only factor affecting the model architecture is data distribution.
 We notice that the best model architecture tends to be the same for similar data distributions.
 As a result, \sys is able to cache a mapping from data distributions to models for future reusing.
-This is done by the Counselor component, which includes four modules: Analyzer, Model Cache, Fine Tuner and Auto-tuner.
+This is done by the Counselor component, which includes four modules: Analyzer, Model Cache, Fine-tuner and Auto-tuner.
 Analyzer extracts distribution information by uniformly sampling $K$ records from the generated training set, then normalize both key and position to [0, 1].
 However, $K$ needs to be large enough to avoid breaking the distribution.
 Model Cache maintains a mapping from the distribution of previous training set to their learning model's architure and parameters.
 If it receives a distribution from Analyzer, it will finds the entry in the map with the most similar distribution based on the mean square error.
-Then, it will send the model's information in that entry to Fine Tuner.
+Then, it will send the model's information in that entry to Fine-tuner.
 Furthermore, if the similarity is below a threshold, it will also start the auto-tuning process.
-Fine Tuner incrementally trains the model retrieved from the model cache with the training set.
+Fine-tuner incrementally trains the model retrieved from the model cache with the training set.
 Auto-tuner uses grid search to find the best model architecture in the given search space.
 It performs auto-tuning at the background and sends the result to the Finalizer component.
 
@@ -86,6 +86,6 @@ This is because the position of each key in the stretched training set is change
 This process is considerably fast as last models are usually linear models.
 % For example, it only takes 118 $\mu$s to retrain one last model with 1000 keys.
 
-The preliminary result shows that, by augmenting dataset with the access frequency, the best model architecture has 45.1\% performance improvement; by caching and reusing previous training result, the rebuilding time is reduced to XXX.
+The preliminary result shows that, by augmenting dataset with the access frequency, the best model architecture has 79.9\% performance improvement.
 
 \end{bigabstract}

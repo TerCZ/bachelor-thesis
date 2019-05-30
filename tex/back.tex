@@ -11,10 +11,9 @@
 \subsection{B树及其变种}
 
 \begin{figure}[!htp]
+% \begin{figure}[htp]
   \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \includegraphics{figure/btree.pdf}
   \bicaption[B树数据结构示意图]
     {B树数据结构示意图}
     {Illustration of B-tree data strucutre}
@@ -252,9 +251,9 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % Familiar methods such as linear regression and ordinary least squares regression are parametric, in that the regression function is defined in terms of a finite number of unknown parameters that are estimated from the data.
 % Nonparametric regression refers to techniques that allow the regression function to lie in a specified set of functions, which may be infinite-dimensional.
 
-\subsection{自动机器学习（Automated machine learning，AutoML）}
+\subsection{自动机器学习}
 
-自动机器学习旨在端到端（end-to-end）的自动化将机器学习应用在真实场景问题上的流程，是目前热门的研究领域\cite{feurer2015efficient, thornton2013auto, kotthoff2017auto}。
+自动机器学习（Automated machine learning，AutoML）旨在端到端（end-to-end）的自动化将机器学习应用在真实场景问题上的流程，是目前热门的研究领域\cite{feurer2015efficient, thornton2013auto, kotthoff2017auto}。
 在典型的机器学习应用中，使用者需要手动地进行数据预处理（data pre-processing）、特征工程（feature engineering）、特称提取（feature extraction）等工作\cite{heaton2016empirical, nargesian2017learning}。
 此外，他们还需要选择恰当地算法并对超参数（hyperparameter）进行优化来获得最好的{\model}预测性能\cite{snoek2012practical, brochu2010tutorial}。
 这些工作为机器学习的应用带来了巨大的挑赞。
@@ -300,10 +299,9 @@ Level Hash提供一种基于共享的两级哈希表结构，实现最坏情况�
 % Similarly, reducing the error from 10k to 100 is a simpler problem as the model can focus only on a subset of the data.
 
 \begin{figure}[!htp]
+% \begin{figure}[htp]
   \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \includegraphics{figure/rmi.pdf}
   \bicaption[{\rmi}数据结构示意图]
     {{\rmi}数据结构示意图}
     {Illustration of RMI data strucutre}
@@ -368,7 +366,7 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 尽管如此，{\rmi}并不是一颗树。
 正如图\ref{fig:rmi}所示，很可能不同的{\model}会选择同一个下一级的{\model}。
 除此之外，每个{\model}也不一定会像B树一样包含相同数量的数据，尽管按照这个算法，如果存在无误差的完美{\model}，每个{\model}将会被分到相同数量的数据。
-最后，根据不用的{\model}选择，中间级的选择不一定需要被当作是数据位置或者{\cdf}的预测，而更应该被考虑为是选择了一个对该键有更多信息，可以做更好预测的``专家''，即选择的下一级{\model}。
+最后，根据不用的{\model}选择，中间级的选择不一定需要被当作是数据位置或者{\cdf}的预测，而更应该被考虑为是选择了一个对该键有更多信息，可以做更好预测的“专家”，即选择的下一级{\model}。
 
 % However, recursive model indexes do not have to be trees.
 % As shown in Figure 3 it is possible that different models of one stage pick the same models at the stage below.
@@ -434,7 +432,7 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 \begin{itemize}
   \item \textbf{整形数组$stages$}，即由{\rmi}每一级所用{\model}个数组成的数组。注意，此数组的第一个元素必须为1，因为{\rmi}的第一级只允许拥有一个{\model}，否则无法保证确定性的索引执行路径；
   \item \textbf{数据数组$data$}，即被{\rmi}所索引的真实数据，它由所有键所对应的<键，{\cdf}值>对组成；
-  \item \textbf{{\model}信息}，即每一级的{\model}相关的配置星系，它包含{\model}类型，以及各类型{\model}特定的信息，如对于{\nn}而言，它还包含每个{\nn}所使用的隐藏层的宽度以及隐藏层的个数。
+  \item \textbf{{\model}信息}，即每一级的{\model}相关的配置信息，它包含{\model}类型，以及各类型{\model}特定的信息，如对于{\nn}而言，它还包含每个{\nn}所使用的隐藏层的宽度以及隐藏层的个数。
 \end{itemize}
 它的输入为完成训练后的到的训练完成的{\rmi}（{\model}数组$models$）。
 

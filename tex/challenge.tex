@@ -14,7 +14,7 @@
 面对广泛存在于真实场景里的动态场景，{\li}的现实应用存在许多挑战与机遇。
 本节将探索并分析{\li}在动态场景下所面临的挑战。
 
-\section{动态数据分布带来的挑战}
+\section{动态数据分布的挑战}
 \label{sec:dist-challenge}
 
 在真实场景下，伴随着写操作的执行，索引数据是频繁变化的，从而导致数据分布的动态变化，而{\li}的设计与测试中均为考虑静态的数据分布下的性能表现。
@@ -23,10 +23,10 @@
 \subsection{动态数据分布}
 
 在{\li}的语境下，数据分布包含两方面需要我们关注的指标{------}{\cdf}以及数据量大小。
-{\cdf}的``形状''将决定{\rmi}中{\model}的拟合结果。
-对于越``简单''的{\cdf}，{\rmi}往往能够通过简单的{\model}，比如{\lr}，获得较好的精确度。
+{\cdf}的“形状”将决定{\rmi}中{\model}的拟合结果。
+对于越“简单”的{\cdf}，{\rmi}往往能够通过简单的{\model}，比如{\lr}，获得较好的精确度。
 而数据量大小则更多影响{\rmi}最后级{\model}的个数，越多的数据量，往往需要更多的{\rmi}最后级{\model}来获得较好的性能。
-除此之外，实际情况中在{\cdf}的``形状''与数据量大小均为发生变化时，如果搜索键的范围发生了移动，{\li}也需要通过重新训练来适应新的{\cdf}。
+除此之外，实际情况中在{\cdf}的“形状”与数据量大小均为发生变化时，如果搜索键的范围发生了移动，{\li}也需要通过重新训练来适应新的{\cdf}。
 
 真实场景中存在这大量的写操作，包括插入、删除以及更新，其中更新操作可以看作是先删除再插入的组合操作。
 因为写操作的存在，被索引的数据将持续地发生变化，从而影响{\cdf}与数量大小，导致真实场景下数据分布往往是动态变化的。
@@ -89,7 +89,7 @@
 {\li}性能将收到多方案的挑战\footnote{当然，最重要的一个挑战是如何高效地支持更新操作。然而这一问题超出了本文探究的范围，
 在接下来的讨论中我们假设对{\li}的写操作能被高效处理，并探讨在这一基础之上{\li}性能面对的挑战。}。
 
-正如上文提到，{\cdf}的``形状''发生变化时，{\rmi}架构需要重新选择，因为在过去的{\cdf}下能够进行高效拟合的{\model}可能将会产生更大的误差，从而导致{\li}的性能降低。
+正如上文提到，{\cdf}的“形状”发生变化时，{\rmi}架构需要重新选择，因为在过去的{\cdf}下能够进行高效拟合的{\model}可能将会产生更大的误差，从而导致{\li}的性能降低。
 类似的，过去针对较难精确拟合的{\cdf}设计的{\rmi}架构可能对于新的{\cdf}而言有许多不必要的计算，比如{\rmi}层数太多与{\model}太复杂，从而产生更坏的{\li}性能。
 同样的，数据量由少变多时，原有的{\rmi}最后级{\model}可能已经无法在较大的数据量下保持优秀的准确度，这时候可能需要通过调整{\rmi}最后级{\model}的个数或者更改{\model}类型来维持{\li}性能的影响的。
 类似的，当数据量由多变少，{\model}类型以及{\rmi}最后级{\model}个数可能也需要进行调整来持续为索引操作提供良好的性能。
@@ -111,11 +111,11 @@
 % \li's stage-based design makes this task even harder, as a different stage can have a different type of models, which exponentially increases the architecture search space.
 % \input{distdata}
 
-\begin{figure}[!htp]
+\begin{figure}[!ht]
+% \begin{figure}[ht]
   \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  % \includegraphics[width=4cm]{example/sjtulogo.png}
+  \includegraphics{figure/four-cdfs.pdf}
   \bicaption[不同数据集的{\cdf}]
     {不同数据集的{\cdf}}
     {CDFs of different datasets}
@@ -123,27 +123,46 @@
 \end{figure}
 
 \begin{table}[!hpb]
+% \begin{table}[hpb]
   \centering
-  \bicaption[不同数据集下使用不同{\rmi}架构的{\li}性能表现]
+  \bicaption[不同数据集下使用第一级为{\nn}的{\rmi}架构的{\li}性能表现]
     % {一个颇为标准的三线表格\footnotemark[1]}
-    {不同数据集下使用不同{\rmi}架构的{\li}性能表现}
-    {The learned index performance with varying RMI architecture under different datasets}
-  \label{tab:dist}
-  \begin{tabular}{@{}llr@{}} \toprule
-    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    % Animal & Description & Price (\$)\\ \midrule
-    % Gnat & per gram & 13.65 \\
-    % & each & 0.01 \\
-    % Gnu & stuffed & 92.50 \\
-    % Emu & stuffed & 33.33 \\
-    % Armadillo & frozen & 8.99 \\ \bottomrule
+    {不同数据集下使用第一级为{\nn}的{\rmi}架构的{\li}性能表现}
+    {The learned index performance with RMI architectures having neural netwrork at the first stage under different datasets}
+  \label{tab:dist-nn}
+  \begin{tabular}{lcccc}
+    \toprule
+                & \multicolumn{4}{c}{Dataset}             \\ \cmidrule{2-5}
+                & D1       & D2      & D3       & D4      \\ \midrule
+    Best Config & 1-12     & 1-8     & 1-12     & 1-16    \\
+    Tput (Mps)  & 2.08     & 2.11    & 2.13     & 2.07    \\
+    Loss        & 4.47e-4  & 7e-6    & 8.43e-4  & 1.5e-5  \\
+    Error bound & 7.86     & 7.39    & 7.56     & 7.48    \\ \bottomrule
   \end{tabular}
 \end{table}
 
-为了减少搜索空间，一个直观的启发式规则是``如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的{\model}，比如{\nn}''。
+\begin{table}[!hpb]
+% \begin{table}[hpb]
+  \centering
+  \bicaption[不同数据集下使用第一级为{\lr}的{\rmi}架构的{\li}性能表现]
+    % {一个颇为标准的三线表格\footnotemark[1]}
+    {不同数据集下使用第一级为{\lr}的{\rmi}架构的{\li}性能表现}
+    {The learned index performance with RMI architectures having linear model at the first stage under different datasets}
+  \label{tab:dist-lr}
+  \begin{tabular}{lcccc}
+    \toprule
+                & \multicolumn{4}{c}{Dataset}              \\ \cmidrule{2-5}
+                & D1       & D2      & D3       & D4       \\ \midrule
+    Tput (Mps)  & 2.24     & 2.01    & 1.89     & 2.28     \\
+    Loss        & 1.17e-3  & 2.79e-3 & 4.53e-3  & 8.91e-3  \\
+    Error bound & 7.84     & 8.50    & 9.20     & 7.91     \\ \bottomrule
+  \end{tabular}
+\end{table}
+
+为了减少搜索空间，一个直观的启发式规则是“如果一个分布不能够被{\lr}较好地拟合，则应该使用更复杂的{\model}，比如{\nn}”。
 不幸的是，这一启发式规则并不能够其效果。
 我们配置了四个不同分布的数据集（图\ref{fig:dist}），将{\li}架构限定为只有两级且第二级固定为1万个{\lr}，并尝试用以上的启发式规则其决定第一级的{\model}类型。
-在表\ref{tab:dist}中，当在第一级使用{\lr}时，它的损失函数{------}均方误差（mean square error）从第一个数据集（D1）到最后一个数据集（D4）不断增加。
+在表\ref{tab:dist-nn}与表\ref{tab:dist-lr}中，当在第一级使用{\lr}时，它的损失函数{------}均方误差（mean square error）从第一个数据集（D1）到最后一个数据集（D4）不断增加。
 这说明第一个数据集被{\lr}更好地拟合了，相比其他数据集。
 同时，通过改变隐藏层（hidden layer）个数以及每个隐藏层的神经元（neuron）个数，我们尝试了不同{\nn}配置并选取了最优的{\nn}配置。
 根据以上启发式规则，对于以上四个数据集，将第一级{\model}替换成{\nn}将会表现出越来越大的相对使用{\lr}的{\li}配置的性能提升。
@@ -157,7 +176,7 @@
 因此，当在第一级使用{\lr}时，{\model}的平均误差值只比第一级使用{\nn}的架构稍微大一些。
 因此，对于第四个数据集，最终具有更好性能的架构是使用{\lr}的架构。
 
-% To reduce the search space, an intuitive heuristic is ``if a distribution can not be fitted well with LR model, then we should use a complex model, like a neural netwrork (NN)''.
+% To reduce the search space, an intuitive heuristic is “if a distribution can not be fitted well with LR model, then we should use a complex model, like a neural netwrork (NN)”.
 % Unfortunately, this heuristic does not work.
 % We configure four datasets with different distributions, fix the second stage to have 10k LR models and try to use this heuristic to decide the first stage model type.
 % \Cref{tab:distdata} shows that, when using LR as the first stage model, its loss (mean square error) increases from the 1st dataset (D1) to the last (D4).
@@ -178,7 +197,7 @@
 % Besides this heuristic, we also try to use some state-of-the-art technique~\cite{snoek2012practical}, bayesian hyperparameter optimization, to automatically search the best architecture.
 % Even we constraint the stage number to be no larger than 2, it still takes about 21 minutes to find the best architecture.
 
-\section{访问模式带来的挑战}
+\section{访问模式的挑战}
 
 真实场景中数据访问往往不是均匀分布的，而是展现出不同的访问模式，而{\li}的设计与测试中均为考虑在不同的访问模式下的性能表现。
 本小节将探讨何为访问模式、访问模式下{\li}的性能表现，并研究分析{\li}在变化各异的访问模式下的所遇到性能问题的成因。
@@ -267,10 +286,9 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏
 事实上，对于{\skewacc}，按照这一实验结果，更优的方案应该是将{\hotkey}用更多的{\model}进行索引，从而达到减少{\hotkey}的对应{\model}所处理的数据量，进而提高对{\hotkey}的索引性能。
 
 \begin{figure}[!htp]
+% \begin{figure}[htp]
   \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \includegraphics{figure/dispatch.pdf}
   \bicaption[{\rmi}数据分配均匀程度示意图]
     {{\rmi}数据分配均匀程度示意图}
     {The illustration of RMI data dispatch evenness}
@@ -289,10 +307,9 @@ Huanchen等人提出混合索引\cite{zhang2016reducing}，针对具有访问偏
 % \textbf{First, the query performance is sensitive to the runtime query distribution.}
 
 \begin{figure}[!htp]
+% \begin{figure}[ht]
   \centering
-%   \includegraphics[width=4cm]{example/sjtulogo.png}
-%   \hspace{1cm}
-%   \includegraphics[width=4cm]{example/sjtulogo.jpg}
+  \includegraphics{figure/osm-cdf.pdf}
   \bicaption[{\osm}的{\cdf}]
     {{\osm}的{\cdf}}
     {The CDF of OSM dataset}
@@ -319,20 +336,20 @@ OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例�
 % [6] OSM is considered a prominent example of volunteered geographic information.
 
 \begin{table}[!hpb]
+% \begin{table}[hpb]
   \centering
   \bicaption[{\li}在不同访问模式下的性能表现]
     % {一个颇为标准的三线表格\footnotemark[1]}
     {{\li}在不同访问模式下的性能表现}
     {The learned index performance under different access patterns}
   \label{tab:pattern}
-  \begin{tabular}{@{}llr@{}} \toprule
-    % \multicolumn{2}{c}{Item} \\ \cmidrule(r){1-2}
-    % Animal & Description & Price (\$)\\ \midrule
-    % Gnat & per gram & 13.65 \\
-    % & each & 0.01 \\
-    % Gnu & stuffed & 92.50 \\
-    % Emu & stuffed & 33.33 \\
-    % Armadillo & frozen & 8.99 \\ \bottomrule
+  \begin{tabular}{lcccc}
+    \toprule
+                  & \multicolumn{4}{c}{Workloads}            \\ \cmidrule{2-5}
+                  & Skewed 1 & Skewed 2 & Skewed 3 & Uniform \\ \midrule
+    B树           & 2.05     & 2.09     & 2.05     & 1.15    \\
+    \li           & 2.42     & 3.11     & 1.12     & 2.02    \\
+    Error bound   & 14.46    & 9.57     & 21.90    & 9.95    \\ \bottomrule
   \end{tabular}
 \end{table}
 
@@ -355,7 +372,7 @@ OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例�
 % The error bound of frequently accessed models in 1st and 3rd workloads is much higer than the others.
 % As a result, \li's performance can be even worse than \stx.
 
-\subsection{动态访问模式对{\li}性能的影响}
+\subsubsection{动态访问模式对{\li}性能的影响}
 
 静态访问模式指的是一种访问模式不随时间变化而变化或随时间变化而变化非常小的一种访问模式变化趋势，
 而动态访问模式指的是一种访问模式随时间变化而变化的一种访问模式变化趋势。
@@ -370,5 +387,5 @@ OpenStreetMap被认为是当前最主要的自愿地理信息分享项目示例�
 % Incidentally, it is along this dimension that the relationship between the distributed database design and query processing is established.
 
 然而，类似第\ref{sec:dist-challenge}节讨论的，{\li}的设计并没有考虑动态的访问模式。
-事实上，{\li}目前是一种``一次构建不再改变''的索引结构。
+事实上，{\li}目前是一种“一次构建不再改变”的索引结构。
 因此当面对真实场景中随处可见的动态访问模式，{\li}的性能将会更加的波动剧烈且不可预测，{\li}的应用前景再一次收到严重挑战。

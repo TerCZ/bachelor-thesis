@@ -9,12 +9,11 @@
 \begin{abstract}
 
 {\li}是一种基于机器学习的索引结构，它将索引视为从键到数据位置的函数映射，通过多层级{\model}结构，{\rmi}，拟合这一函数关系。
-作为一种新型索引结构，相比传统的B树索引，{\li}不仅能够减少了查询的执行时间，还降低了索引结构的空间消耗。
-这些特性为{\li}带来了许多吸引力，激起了系统研究社区的广泛讨论。
+作为一种新型索引结构，{\li}不仅缩短了查询的执行时间，还降低了索引结构的空间消耗。
+这些吸引人的特性与创新性的设计激起了系统研究社区的广泛讨论。
 
 然而，{\li}的设计与实现较为初步。
-{\li}假设工作场景是只读的，且访问是均匀分布的。
-然而，在真实场景下，伴随着写操作的执行，索引数据是频繁变化的，从而带来数据分布的动态变化。
+{\li}假设工作场景是只读的且访问是均匀分布的，而在真实场景下，伴随着写操作的执行，索引数据是频繁变化的，从而带来数据分布的动态变化。
 同时，真实场景下工作负载是具有访问模式的，从而带来数据访问偏向性。
 这些广泛存在于真实场景里的动态场景为{\li}的应用带来了许多挑战与机遇。
 
@@ -23,9 +22,9 @@
 
 针对真实场景对{\li}提出的挑战，本文提出了一个新的针对动态场景的学习索引系统{------}{\sys}。
 通过数据拉伸方法，{\sys}将访问模式信息加入了{\li}的构建过程；
-通过模型缓存机制，{\sys}克服了高昂的{\li}架构搜索代价；
-通过完整的系统设计，{\sys}应用以上两个技术创新点，构建了一个面向真实场景的动态的学习索引系统。
-实验结果证明，{\sys}能够带来高达XXX\%的性能提升，并节省，能够高效地应对真实场景对{\li}带来的挑战。
+通过模型缓存机制，{\sys}克服了高昂的{\li}架构搜索代价。
+{\sys}应用以上两个技术创新点，构建了一个面向真实场景的动态的学习索引系统。
+实验结果证明，{\sys}能够带来高达79.9\%的性能提升，能够高效地应对真实场景对{\li}带来的挑战。
 
 \end{abstract}
 
@@ -53,6 +52,6 @@ To handle skewed access pattern, we first investigate and discuss why the origin
 To improve the latency for skew queries, \sys augments the training data with access frequencies.
 For the issue of model re-training, our insight is that the same model architecture can be reused for similar data distribution and access pattern.
 To address the slow model re-training when data distribution shifts, \sys caches the previously-trained models and incrementally fine-tunes them for similar access patterns and data distribution.
-The preliminary result shows that, by augmenting dataset with the access frequency, the best model architecture has 45.1\% performance improvement; by caching and reusing previous training result, the rebuilding time is reduced to XXX.
+The preliminary result shows that, by augmenting dataset with the access frequency, the best model architecture has 79.9\% performance improvement.
 
 \end{englishabstract}
