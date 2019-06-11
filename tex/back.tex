@@ -2,6 +2,8 @@
 \chapter{相关技术背景}
 \label{chap:back}
 
+本章将从介传统索引结构、机器学习以及{\li}三个方面介绍相关的背景知识，并且比较{\li}与传统索引结构在数据结构与算法上的差异。
+
 \section{传统索引结构}
 
 索引是一类用于提高数据查询效率的数据结构。
@@ -39,7 +41,8 @@ B树及其变种索引结构因此被广泛地使用在数据库、文件系统�
 % 这种数据结构常被应用在数据库和文件系统的实现上。
 
 分形树\cite{esmet2012tokufs}（Fractal Tree）和B$^\epsilon$树\cite{bender2015and}（B$^\epsilon$-tree）是B树的一种变种，它们与B树类似，
-将数据排序并通过固定大小的节点进行索引，从而提供对数时间的性能。然而它们每一个节点包含一个缓存（buffer），
+将数据排序并通过固定大小的节点进行索引，从而提供对数时间的性能。
+然而它们每一个节点包含一个缓存（buffer），
 允许将插入、删除等修改操作临时保存在中间节点。
 通过使用缓存，这些修改只会在积累了一定数量后，才会被写入下一级节点，从而避免了B树在索引磁盘数据时，
 任何大小的写操作都会导致一次费时的磁盘读写操作。
@@ -136,7 +139,8 @@ Succinct Range Filter\cite{zhang2018surf}（SuRF）是一种简明数据结构\f
 SuRF通过将储存的键通过简明编码的字典树进行索引，从而允许高效地达到范围查询的过滤器功能，即不用真实查询磁盘即知道范围内的键是否存在，有效减少范围查找对磁盘的访问开销。
 SuRF基于以下观察：对于一棵字典树来说，上层节点较少但访问频繁，而下层节点则相对的访问较少缺占据较大空间。
 因此，SuRF使用了两种数据结构来分别处理这两类节点，即热节点与冷节点。
-在较上层使用了LOUDS-Dense的编码方式来存储节点，注重高效的查询效率。在较下层使用LOUDS-Sparse的编码方式来存储节点，注重空间的利用率。
+在较上层使用了LOUDS-Dense的编码方式来存储节点，注重高效的查询效率。
+在较下层使用LOUDS-Sparse的编码方式来存储节点，注重空间的利用率。
 
 % We present the Succinct Range Filter (SuRF), a fast and compact data structure for approximate membership tests.
 % Unlike traditional Bloom filters, SuRF supports both single-key lookups and common range queries: open-range queries, closed-range queries, and range counts.
@@ -163,7 +167,8 @@ SuRF基于以下观察：对于一棵字典树来说，上层节点较少但访�
 % In many situations, hash tables turn out to be on average more efficient than search trees or any other table lookup structure.
 % For this reason, they are widely used in many kinds of computer software, particularly for associative arrays, database indexing, caches, and sets.
 
-Cuckoo Hash\cite{pagh2004cuckoo}是简单的哈希表结构，能够提供最坏情况下常数时间的查询时间，接近于经典的完美哈希\cite{botelho2005practical, lu2006perfect}（perfect hashing）的理论性能。它的空间使用情况接近于二分搜索树，即平均每个键需要3个字长（word）。
+Cuckoo Hash\cite{pagh2004cuckoo}是简单的哈希表结构，能够提供最坏情况下常数时间的查询时间，接近于经典的完美哈希\cite{botelho2005practical, lu2006perfect}（perfect hashing）的理论性能。
+它的空间使用情况接近于二分搜索树，即平均每个键需要3个字长（word）。
 Cuckoo Hash并未使用完美哈希算法，而是通过一种开放寻址（open addressing）的变种算法，允许键在探寻序列（probing sequence）中的移动来得到优异性能。
 对于一个键，Cuckoo Hash通过计算两个不同的哈希函数来避免哈希冲突。
 插入时，两个哈希函数的计算结果都可作为插入位置，若两个位置都被占用了，其中一个占用的键将会被移动到其另一个哈希函数的计算结果指定的位置。
@@ -426,9 +431,11 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 \end{algorithmic}
 \end{algorithm}
 
-算法\ref{algo:rmi-train}是{\rmi}的训练算法。它的输入如下：
+算法\ref{algo:rmi-train}是{\rmi}的训练算法。
+它的输入如下：
 \begin{itemize}
-  \item \textbf{整形数组$stages$}，即由{\rmi}每一级所用{\model}个数组成的数组。注意，此数组的第一个元素必须为1，因为{\rmi}的第一级只允许拥有一个{\model}，否则无法保证确定性的索引执行路径；
+  \item \textbf{整形数组$stages$}，即由{\rmi}每一级所用{\model}个数组成的数组。
+  注意，此数组的第一个元素必须为1，因为{\rmi}的第一级只允许拥有一个{\model}，否则无法保证确定性的索引执行路径；
   \item \textbf{数据数组$data$}，即被{\rmi}所索引的真实数据，它由所有键所对应的<键，{\cdf}值>对组成；
   \item \textbf{{\model}信息}，即每一级的{\model}相关的配置信息，它包含{\model}类型，以及各类型{\model}特定的信息，如对于{\nn}而言，它还包含每个{\nn}所使用的隐藏层的宽度以及隐藏层的个数。
 \end{itemize}
@@ -474,7 +481,8 @@ $f_l$会递归地执行这一方程直到根级$L_0$。
 \end{algorithmic}
 \end{algorithm}
 
-算法\ref{algo:rmi-train}是{\rmi}的推断算法。它的输入如下：
+算法\ref{algo:rmi-train}是{\rmi}的推断算法。
+它的输入如下：
 \begin{itemize}
   \item \textbf{训练完成的{\rmi}（{\model}数组$models$）}，即由{\model}组成的二维数组，其第一个下标表示对应{\model}所属的层级编号，第二个下标表示对应{\model}所属该层级中的{\model}编号；
   \item \textbf{查询键$key$}，即使用{\rmi}进行查询的键。
@@ -539,7 +547,8 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % For the model, we can again leverage the recursive model architecture from the previous section.
 % Obviously, like before, there exists a trade-off between the size of the index and performance, which is influenced by the model and dataset.
 
-存在索引可以通过两种方案在{\li}中实现。一种方法是将存在索引视为二分概率分类任务（binary probabilistic classification task）。
+存在索引可以通过两种方案在{\li}中实现。
+一种方法是将存在索引视为二分概率分类任务（binary probabilistic classification task）。
 通过{\model}来预测查询键$key$是否是一个存在的键。
 比如说，对于字符串，{\li}可以使用循环神经网络与卷积神经网络来完成这一分类任务。
 学习过程中需要提供不存在的键已告知{\model}有关不存在的键的相关信息。
@@ -556,4 +565,9 @@ $$e = log_2(max\_err - min\_err + 1)$$
 % Interestingly, we can use the same probabilistic classification model as before to achieve that.
 % That is, we can create a hash function d, which maps f to a bit array of size m by scaling its output as d = f (x) ∗ m As such, we can use d as a hash function just like any other in a Bloom filter.
 
-本文主要探讨{\li}的范围索引结构，在接下来的篇幅中，我们将混合地使用{\li}与{\rmi}这两个属于来指代{\li}的范围索引结构。 
+本文主要探讨{\li}的范围索引结构，在接下来的篇幅中，我们将混合地使用{\li}与{\rmi}这两个属于来指代{\li}的范围索引结构。
+
+\section{本章小结}
+本章介绍了传统索引结构、机器学习以及{\li}的相关背景知识，比较了{\li}与传统索引结构在数据结构与算法上的差异。
+相比传统索引结构，{\li}通过{\model}进行对数据位置进行预测，通过记录预测的误差来提供一个可靠的搜索范围。
+因为{\model}能够高效地减小搜索误差，所以{\li}查询的执行时间较短，空间消耗较低。
